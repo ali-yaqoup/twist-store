@@ -1,0 +1,3 @@
+-- Seed data lives in migrations/0002_seed.sql and 0004_cms.sql
+-- so `supabase db push` (cloud) and `supabase start` (local) both apply it.
+-- This file is only used by `supabase db reset`; keep it empty to avoid duplicates.
