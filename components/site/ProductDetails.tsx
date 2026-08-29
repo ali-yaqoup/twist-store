@@ -52,10 +52,10 @@ export default function ProductDetails({ product }: { product: Product }) {
   const incQtyTap = useIosTap(() => setQuantity((q) => q + 1));
 
   return (
-    <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start lg:gap-12 xl:gap-16">
       {/* معرض الصور */}
-      <div>
-        <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-brand/16 bg-night-card sm:aspect-square">
+      <div className="lg:sticky lg:top-24">
+        <div className="image-frame relative aspect-[4/5] sm:aspect-square">
           <Image
             src={images[activeImage] ?? "/placeholder-product.svg"}
             alt={product.name}
@@ -102,15 +102,15 @@ export default function ProductDetails({ product }: { product: Product }) {
             {product.categories.name}
           </Link>
         )}
-        <h1 className="font-display mt-2 text-2xl font-extrabold text-stone-50 sm:text-3xl lg:text-4xl">
+        <h1 className="font-display heading-ar mt-2 text-2xl font-extrabold text-stone-50 sm:text-3xl lg:text-4xl">
           {product.name}
         </h1>
-        <p className="font-display mt-4 text-2xl font-extrabold text-brand sm:text-3xl">
+        <p className="price-tag mt-4 text-2xl sm:text-3xl">
           {formatPrice(product.price)}
         </p>
 
         {product.description && (
-          <p className="mt-5 leading-8 text-stone-400">{product.description}</p>
+          <p className="body-ar mt-5 text-stone-400">{product.description}</p>
         )}
 
         <div className="mt-8 space-y-6">
@@ -124,10 +124,8 @@ export default function ProductDetails({ product }: { product: Product }) {
                     key={s}
                     type="button"
                     onClick={() => setSize(s)}
-                    className={`min-h-11 min-w-11 touch-manipulation rounded-lg border px-4 py-2 text-sm font-bold transition-colors active:border-brand active:text-brand ${
-                      size === s
-                        ? "border-brand bg-brand text-black"
-                        : "border-brand/20 text-stone-300 hover:border-brand hover:text-brand"
+                    className={`option-pill touch-manipulation ${
+                      size === s ? "option-pill-active" : ""
                     }`}
                   >
                     {s}
@@ -147,10 +145,8 @@ export default function ProductDetails({ product }: { product: Product }) {
                     key={c}
                     type="button"
                     onClick={() => setColor(c)}
-                    className={`min-h-11 touch-manipulation rounded-lg border px-4 py-2 text-sm font-bold transition-colors active:border-brand active:text-brand ${
-                      color === c
-                        ? "border-brand bg-brand text-black"
-                        : "border-brand/20 text-stone-300 hover:border-brand hover:text-brand"
+                    className={`option-pill touch-manipulation ${
+                      color === c ? "option-pill-active" : ""
                     }`}
                   >
                     {c}
@@ -175,10 +171,8 @@ export default function ProductDetails({ product }: { product: Product }) {
                     key={value}
                     type="button"
                     onClick={() => setServiceType(value)}
-                    className={`min-h-11 rounded-lg border px-5 py-2 text-sm font-bold transition-colors ${
-                      serviceType === value
-                        ? "border-brand bg-brand text-black"
-                        : "border-brand/20 text-stone-300 hover:border-brand hover:text-brand"
+                    className={`option-pill touch-manipulation ${
+                      serviceType === value ? "option-pill-active" : ""
                     }`}
                   >
                     {label}
@@ -278,10 +272,8 @@ export default function ProductDetails({ product }: { product: Product }) {
             <button
               type="button"
               disabled={uploadingDesign}
-              className={`glow-gold min-h-11 w-full flex-1 touch-manipulation rounded-full px-8 py-3.5 text-base font-extrabold transition-all disabled:opacity-60 sm:w-auto ${
-                added
-                  ? "bg-green-500 text-black"
-                  : "bg-brand text-black hover:bg-brand-soft hover:shadow-[0_0_28px_rgba(245,196,0,0.38)] active:scale-[0.98]"
+              className={`btn-gold glow-gold min-h-11 w-full flex-1 touch-manipulation disabled:opacity-60 sm:w-auto ${
+                added ? "!bg-green-500 !text-black" : ""
               }`}
               {...addTap}
             >

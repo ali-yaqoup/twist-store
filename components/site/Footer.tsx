@@ -12,9 +12,9 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
   ].filter((s) => s.href);
 
   return (
-    <footer className="mt-auto border-t border-brand/15 bg-night-soft">
+    <footer className="mt-auto border-t border-brand/12 bg-night-soft pb-safe">
       <div
-        className={`mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 md:gap-8 lg:gap-12 ${
+        className={`mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-10 sm:grid-cols-2 sm:gap-10 sm:px-6 sm:py-14 md:gap-8 lg:gap-12 ${
           socials.length > 0 ? "lg:grid-cols-4" : "lg:grid-cols-3"
         }`}
       >
@@ -28,10 +28,10 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
         </div>
 
         <div>
-          <h3 className="font-display mb-5 text-sm font-bold tracking-wide text-stone-100">
+          <h3 className="font-display mb-4 text-sm font-bold tracking-wide text-stone-100">
             روابط سريعة
           </h3>
-          <ul className="space-y-1 text-sm text-stone-400">
+          <ul className="space-y-0.5 text-sm text-stone-400">
             <li><Link href="/" className="inline-flex min-h-11 items-center transition-colors hover:text-brand">الرئيسية</Link></li>
             <li><Link href="/products" className="inline-flex min-h-11 items-center transition-colors hover:text-brand">المنتجات</Link></li>
             <li><Link href="/wishlist" className="inline-flex min-h-11 items-center transition-colors hover:text-brand">قائمة الأمنيات</Link></li>

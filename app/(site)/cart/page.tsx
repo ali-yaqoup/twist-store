@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cartLineKey, useCart } from "@/components/cart/CartProvider";
 import EmptyState from "@/components/site/EmptyState";
+import CheckoutSteps from "@/components/site/CheckoutSteps";
 import PageHeading from "@/components/site/PageHeading";
 import { formatPrice } from "@/lib/config";
 import { useIosTap } from "@/lib/ios-tap";
@@ -108,8 +109,9 @@ export default function CartPage() {
   const { items, total, updateQuantity, removeItem } = useCart();
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
+    <div className="section-container py-8 sm:py-12">
       <PageHeading title="سلة التسوق" />
+      <CheckoutSteps current={1} />
 
       {items.length === 0 ? (
         <EmptyState
@@ -133,7 +135,7 @@ export default function CartPage() {
             })}
           </ul>
 
-          <aside className="card-luxe h-fit p-6 lg:sticky lg:top-24">
+          <aside className="card-luxe h-fit p-5 sm:p-6 lg:sticky lg:top-24">
             <h2 className="font-display text-lg font-extrabold text-stone-100">ملخص الطلب</h2>
             <div className="mt-5 space-y-3 border-b border-brand/15 pb-5 text-sm text-stone-400">
               <div className="flex justify-between">

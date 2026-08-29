@@ -38,8 +38,8 @@ export default function ProductCard({ product }: { product: Product }) {
   const quickAddTap = useIosTap(quickAdd);
 
   return (
-    <div className="group min-w-0 overflow-hidden rounded-xl border border-brand/16 bg-night-card transition-all duration-300 hover:border-brand/45 hover:shadow-[0_16px_40px_rgba(0,0,0,0.45),0_0_24px_rgba(245,196,0,0.08)]">
-      <div className="relative aspect-[4/5] overflow-hidden bg-night-soft">
+    <div className="group card-hover-lift card-luxe min-w-0 overflow-hidden hover:border-brand/45 hover:shadow-[0_20px_48px_rgba(0,0,0,0.5),0_0_28px_rgba(245,196,0,0.1)]">
+      <div className="image-frame relative aspect-[4/5] rounded-none border-0 shadow-none">
         <Link
           href={`/products/${product.id}`}
           className="absolute inset-0 z-0"
@@ -79,18 +79,18 @@ export default function ProductCard({ product }: { product: Product }) {
         </button>
       </div>
 
-      <div className="space-y-1.5 px-3.5 py-4">
+      <div className="space-y-1 px-4 py-4 sm:px-4 sm:py-5">
         {product.categories && (
-          <span className="text-[11px] tracking-wide text-stone-500">
+          <span className="text-[11px] font-medium tracking-wide text-stone-500">
             {product.categories.name}
           </span>
         )}
         <Link href={`/products/${product.id}`}>
-          <h3 className="font-display line-clamp-1 text-[15px] font-bold text-stone-100 transition-colors group-hover:text-brand">
+          <h3 className="font-display heading-ar line-clamp-2 text-[15px] font-bold text-stone-100 transition-colors group-hover:text-brand sm:line-clamp-1">
             {product.name}
           </h3>
         </Link>
-        <p className="pt-1 font-display text-base font-extrabold tracking-wide text-brand">
+        <p className="price-tag pt-1.5 text-lg sm:text-xl">
           {formatPrice(product.price)}
         </p>
       </div>

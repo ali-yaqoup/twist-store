@@ -35,7 +35,7 @@ export default async function ProductsPage({
       <PageHeading title={settings.products_title} />
 
       <div className="mt-8 grid gap-6 lg:mt-10 lg:grid-cols-[260px_1fr] lg:gap-8">
-        <aside className="card-luxe h-fit p-4 sm:p-5 lg:sticky lg:top-24">
+        <aside className="card-luxe h-fit p-4 sm:p-5 lg:sticky lg:top-24 lg:p-6">
           <ProductFilters
             categories={categories}
             current={{
@@ -48,7 +48,7 @@ export default async function ProductsPage({
 
         <div className="min-w-0">
           {products.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

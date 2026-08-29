@@ -61,9 +61,9 @@ export default function ProductFilters({ categories, current }: Props) {
         </svg>
       </button>
 
-      <div className={`${open ? "mt-5 block" : "hidden"} space-y-7 lg:mt-0 lg:block`}>
-        <div>
-          <h3 className="mb-3 font-bold text-stone-100">الفئة</h3>
+      <div className={`${open ? "mt-5 block" : "hidden"} space-y-8 lg:mt-0 lg:block`}>
+        <div className="border-b border-brand/10 pb-6">
+          <h3 className="mb-3 text-sm font-bold tracking-wide text-stone-100">الفئة</h3>
           <ul className="flex flex-wrap gap-2 lg:block lg:space-y-1 lg:gap-0">
             <li>
               <Link
@@ -94,8 +94,8 @@ export default function ProductFilters({ categories, current }: Props) {
           </ul>
         </div>
 
-        <form onSubmit={applyPrice}>
-          <h3 className="mb-3 font-bold text-stone-100">السعر</h3>
+        <form onSubmit={applyPrice} className="pt-2">
+          <h3 className="mb-3 text-sm font-bold tracking-wide text-stone-100">السعر (₪)</h3>
           <div className="flex items-center gap-2">
             <input
               type="number"

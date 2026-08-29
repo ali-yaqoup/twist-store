@@ -50,7 +50,7 @@ export default function WishlistPage() {
           {items.map((item) => (
             <li
               key={item.productId}
-              className="group overflow-hidden rounded-xl border border-brand/16 bg-night-card transition-all duration-300 hover:border-brand/45 hover:shadow-[0_16px_40px_rgba(0,0,0,0.45),0_0_24px_rgba(245,196,0,0.08)]"
+              className="group card-hover-lift card-luxe overflow-hidden hover:border-brand/45 hover:shadow-[0_20px_48px_rgba(0,0,0,0.5),0_0_28px_rgba(245,196,0,0.1)]"
             >
               <Link href={`/products/${item.productId}`} className="block">
                 <div className="relative aspect-[4/5] overflow-hidden bg-night-soft">
@@ -70,7 +70,7 @@ export default function WishlistPage() {
                     {item.name}
                   </h2>
                 </Link>
-                <p className="font-display text-base font-extrabold text-brand">
+                <p className="price-tag text-lg sm:text-xl">
                   {formatPrice(item.price)}
                 </p>
                 <div className="mt-3 flex items-center gap-2">

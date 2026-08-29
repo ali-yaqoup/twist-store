@@ -49,11 +49,11 @@ export default function HeroBanner({
   const overlay = (
     <div className="relative z-10 mx-auto flex min-h-[70svh] w-full max-w-3xl flex-col items-center justify-center px-4 py-16 text-center sm:min-h-[78svh] sm:px-6 sm:py-24 lg:min-h-[86svh] lg:py-36">
       {settings.hero_badge && (
-        <span className="rounded-full border border-brand/35 bg-black/45 px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] text-brand backdrop-blur-sm sm:px-4 sm:text-[11px] sm:tracking-[0.18em]">
+        <span className="rounded-full border border-brand/40 bg-black/55 px-3.5 py-1.5 text-[10px] font-bold tracking-[0.14em] text-brand shadow-[0_4px_20px_rgba(0,0,0,0.5)] backdrop-blur-md sm:px-4 sm:text-[11px] sm:tracking-[0.18em]">
           {settings.hero_badge}
         </span>
       )}
-      <h1 className="font-display mt-5 max-w-3xl text-[1.7rem] font-extrabold leading-[1.3] text-stone-50 sm:mt-7 sm:text-5xl sm:leading-[1.15] lg:text-6xl lg:leading-[1.12]">
+      <h1 className="font-display hero-text-shadow heading-ar mt-5 max-w-3xl text-[1.75rem] font-extrabold text-stone-50 sm:mt-7 sm:text-5xl lg:text-6xl">
         {settings.hero_title}{" "}
         {settings.hero_highlight && (
           <span className="text-brand text-glow">{settings.hero_highlight}</span>
@@ -61,7 +61,7 @@ export default function HeroBanner({
       </h1>
       <div className="mx-auto mt-5 h-px w-16 bg-gradient-to-l from-transparent via-brand to-brand sm:mt-6 sm:w-24" />
       {settings.hero_subtitle && (
-        <p className="mt-5 max-w-xl text-sm leading-7 text-stone-300 sm:mt-6 sm:text-lg sm:leading-8">
+        <p className="body-ar hero-text-shadow mt-5 max-w-xl text-sm text-stone-200 sm:mt-6 sm:text-lg">
           {settings.hero_subtitle}
         </p>
       )}
@@ -69,7 +69,7 @@ export default function HeroBanner({
         {settings.hero_cta_label && (
           <Link
             href={settings.hero_cta_href || "/products"}
-            className="btn-gold glow-gold relative z-10 w-full touch-manipulation text-sm sm:w-auto sm:text-base"
+            className="btn-gold glow-gold relative z-10 w-full touch-manipulation text-sm shadow-[0_8px_32px_rgba(245,196,0,0.25)] sm:w-auto sm:min-w-[180px] sm:text-base"
           >
             {settings.hero_cta_label}
           </Link>
@@ -77,7 +77,7 @@ export default function HeroBanner({
         {settings.hero_secondary_cta_label && (
           <Link
             href={settings.hero_secondary_cta_href || "/contact"}
-            className="btn-outline relative z-10 w-full touch-manipulation bg-black/25 text-sm text-stone-100 sm:w-auto sm:text-base"
+            className="btn-outline relative z-10 w-full touch-manipulation border-white/25 bg-black/35 text-sm text-stone-100 backdrop-blur-sm sm:w-auto sm:min-w-[160px] sm:text-base"
           >
             {settings.hero_secondary_cta_label}
           </Link>
@@ -113,7 +113,7 @@ export default function HeroBanner({
       {slides.map((slide, i) => (
         <div
           key={slide.id}
-          className={`pointer-events-none absolute inset-0 transition-opacity duration-1000 ${
+          className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ease-in-out ${
             i === index ? "opacity-100" : "opacity-0"
           }`}
         >
@@ -127,8 +127,8 @@ export default function HeroBanner({
           />
         </div>
       ))}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-night via-night/70 to-black/40" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.45)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-night via-night/75 to-black/50" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(0,0,0,0.55)_100%)]" />
       {overlay}
       {count > 1 && (
         <>

@@ -79,13 +79,13 @@ export default function Header() {
               type="button"
               tabIndex={-1}
               aria-label="إغلاق القائمة"
-              className="fixed inset-0 z-[9998] cursor-pointer touch-manipulation bg-black/65"
+              className="fixed inset-0 z-[9998] cursor-pointer touch-manipulation bg-black/60 backdrop-blur-[2px] transition-opacity"
               {...closeTap}
             />
             <nav
               id={menuId}
               aria-label="القائمة"
-              className="fixed inset-x-0 top-16 z-[9999] max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b border-brand/20 bg-night px-4 py-3 shadow-[0_16px_40px_rgba(0,0,0,0.55)] sm:top-[4.75rem] sm:max-h-[calc(100dvh-4.75rem)]"
+              className="animate-drawer-in fixed inset-x-0 top-16 z-[9999] max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b border-brand/20 bg-night/98 px-4 py-4 shadow-[0_20px_48px_rgba(0,0,0,0.6)] sm:top-[4.75rem] sm:max-h-[calc(100dvh-4.75rem)]"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               {NAV_LINKS.map((link) => (
@@ -93,8 +93,10 @@ export default function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={closeMenu}
-                  className={`flex min-h-11 items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors active:bg-white/10 hover:bg-white/5 hover:text-brand ${
-                    pathname === link.href ? "text-brand" : "text-stone-300"
+                  className={`flex min-h-11 items-center rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 active:bg-white/10 hover:bg-white/5 hover:text-brand ${
+                    pathname === link.href
+                      ? "bg-brand/10 text-brand"
+                      : "text-stone-300"
                   }`}
                 >
                   {link.label}
@@ -109,10 +111,10 @@ export default function Header() {
   return (
     <>
       <header
-        className="sticky top-0 z-[100] isolate border-b border-brand/15 bg-night/95 lg:bg-night/75 lg:backdrop-blur-xl"
+        className="sticky top-0 z-[100] isolate border-b border-brand/12 bg-night/90 shadow-[0_1px_0_rgba(245,196,0,0.06)] lg:bg-night/70 lg:backdrop-blur-xl lg:backdrop-saturate-150"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:h-[4.75rem] sm:px-6">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:h-[4.75rem] sm:gap-3 sm:px-6">
           <Link href="/" className="relative z-[1] flex min-w-0 items-center gap-2 sm:gap-3" onClick={closeMenu}>
             {settings.logo_url ? (
               <span dir="ltr" className="inline-flex min-w-0 items-center gap-2 text-brand">

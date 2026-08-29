@@ -32,9 +32,9 @@ export default async function HomePage() {
       <HeroBanner slides={slides} settings={settings} />
 
       {categories.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
+        <section className="section-container section-py">
           <SectionTitle title={settings.categories_title} />
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
             {categories.map((cat) => (
               <CategoryCard key={cat.id} category={cat} />
             ))}
@@ -42,14 +42,14 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-16">
+      <section className="section-container section-py pt-0 sm:pt-0">
         <SectionTitle
           title={settings.featured_title}
           subtitle={settings.featured_subtitle}
         />
         {featured.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
               {featured.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -68,8 +68,8 @@ export default async function HomePage() {
       </section>
 
       {gallery.length > 0 && (
-        <section className="mt-8 bg-night-soft py-12 sm:py-16 lg:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <section className="section-py bg-night-soft">
+          <div className="section-container">
             <SectionTitle
               title={settings.gallery_title}
               subtitle={settings.gallery_subtitle}
@@ -99,14 +99,14 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
+      <section className="section-container section-py">
         <div className="grid items-center gap-8 overflow-hidden rounded-2xl border border-brand/18 bg-night-card p-5 sm:gap-10 sm:p-8 md:grid-cols-2 md:p-12">
           <div className="min-w-0">
-            <h2 className="font-display text-2xl font-extrabold text-balance text-stone-50 sm:text-3xl">
+            <h2 className="font-display heading-ar text-2xl font-extrabold text-stone-50 sm:text-3xl">
               {settings.home_about_title}
             </h2>
-            <div className="mt-4 h-px w-16 bg-gradient-to-l from-transparent via-brand to-brand" />
-            <p className="mt-5 leading-8 text-stone-400">{settings.home_about_text}</p>
+            <div className="mt-4 h-px w-12 bg-gradient-to-l from-transparent via-brand to-brand sm:w-16" />
+            <p className="body-ar mt-5 text-stone-400">{settings.home_about_text}</p>
             {settings.home_about_bullets.length > 0 && (
               <ul className="mt-6 space-y-3 text-sm text-stone-300">
                 {settings.home_about_bullets.map((f) => (
@@ -143,18 +143,18 @@ export default async function HomePage() {
       </section>
 
       {testimonials.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-24">
+        <section className="section-container pb-16 sm:pb-24">
           <SectionTitle title={settings.testimonials_title} />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {testimonials.map((t) => (
               <blockquote
                 key={t.id}
-                className="card-luxe p-6"
+                className="card-luxe card-hover-lift p-6"
               >
                 <div className="mb-3 text-xs tracking-[0.2em] text-brand" aria-hidden>
                   {"★".repeat(t.rating)}
                 </div>
-                <p className="text-sm leading-7 text-stone-300">“{t.quote}”</p>
+                <p className="body-ar text-sm text-stone-300">“{t.quote}”</p>
                 <footer className="mt-5 text-sm font-bold text-brand">— {t.name}</footer>
               </blockquote>
             ))}

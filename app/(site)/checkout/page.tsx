@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
+import CheckoutSteps from "@/components/site/CheckoutSteps";
 import { useSiteSettings } from "@/components/site/SiteContentProvider";
 import { formatPrice, whatsappHref } from "@/lib/config";
 import { createOrder } from "./actions";
@@ -96,7 +97,8 @@ export default function CheckoutPage() {
 
   if (done) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-24 text-center sm:px-6">
+      <div className="section-container px-4 py-16 text-center sm:py-24">
+        <CheckoutSteps current={3} />
         <span className="font-display text-5xl font-extrabold text-brand">✓</span>
         <h1 className="font-display mt-6 text-3xl font-extrabold text-stone-50">تم استلام طلبك!</h1>
         <p className="mt-4 leading-8 text-stone-400">
@@ -145,9 +147,10 @@ export default function CheckoutPage() {
   const inputClass = "input-luxe";
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
-      <h1 className="font-display text-2xl font-extrabold text-stone-50 sm:text-3xl lg:text-4xl">إتمام الطلب</h1>
-      <div className="mt-4 h-px w-16 bg-gradient-to-l from-transparent via-brand to-brand" />
+    <div className="section-container py-8 sm:py-12">
+      <h1 className="font-display heading-ar text-2xl font-extrabold text-stone-50 sm:text-3xl lg:text-4xl">إتمام الطلب</h1>
+      <div className="mt-3 h-px w-12 bg-gradient-to-l from-transparent via-brand to-brand sm:w-16" />
+      <CheckoutSteps current={2} />
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_320px]">
         <form onSubmit={handleSubmit} className="card-luxe space-y-5 p-4 sm:p-6 md:p-8">
@@ -231,7 +234,7 @@ export default function CheckoutPage() {
         </form>
 
         {/* ملخص */}
-        <aside className="card-luxe h-fit p-6 lg:sticky lg:top-24">
+        <aside className="card-luxe h-fit p-5 sm:p-6 lg:sticky lg:top-24">
           <h2 className="font-display text-lg font-extrabold text-stone-100">طلبك</h2>
           <ul className="mt-4 space-y-3 border-b border-brand/15 pb-4 text-sm">
             {items.map((item, i) => (
