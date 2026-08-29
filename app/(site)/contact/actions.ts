@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export interface ContactResult {
   ok: boolean;
@@ -14,6 +15,10 @@ export async function sendContactMessage(formData: FormData): Promise<ContactRes
 
   if (!name || !phone || !message) {
     return { ok: false, error: "الرجاء تعبئة جميع الحقول" };
+  }
+
+  if (!isSupabaseConfigured()) {
+    return { ok: true };
   }
 
   const supabase = await createClient();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useWishlist } from "@/components/wishlist/WishlistProvider";
+import { useIosTapWithEvent } from "@/lib/ios-tap";
 import type { Product } from "@/lib/types";
 
 export default function WishlistButton({
@@ -14,38 +15,35 @@ export default function WishlistButton({
   const saved = isSaved(product.id);
   const label = saved ? "إزالة من قائمة الأمنيات" : "أضف لقائمة الأمنيات";
 
+  const handleToggle = () => toggleItem(product);
+  const tap = useIosTapWithEvent(() => handleToggle());
+
   return (
     <button
       type="button"
       aria-label={label}
       aria-pressed={saved}
       title={label}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleItem(product);
-      }}
       className={
         variant === "label"
-          ? `inline-flex items-center gap-2 rounded-full border px-5 py-3.5 text-sm font-bold transition-colors ${
+          ? `inline-flex min-h-11 w-full touch-manipulation items-center justify-center gap-2 rounded-full border px-5 py-3.5 text-sm font-bold transition-all sm:w-auto ${
               saved
                 ? "border-brand bg-brand/15 text-brand"
-                : "border-white/20 text-stone-200 hover:border-brand hover:text-brand"
+                : "border-brand/25 text-stone-200 hover:border-brand hover:text-brand active:border-brand active:text-brand"
             }`
-          : `flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur-md transition-colors ${
-              saved
-                ? "border-brand bg-brand text-black"
-                : "border-white/15 bg-black/55 text-stone-100 hover:border-brand hover:text-brand"
+          : `icon-action touch-manipulation ${
+              saved ? "border-brand bg-brand text-black hover:text-black" : ""
             }`
       }
+      {...tap}
     >
       <svg
-        width="18"
-        height="18"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill={saved ? "currentColor" : "none"}
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden

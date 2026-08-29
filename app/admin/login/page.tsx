@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import TwistLogo from "@/components/site/TwistLogo";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -42,11 +43,9 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-night px-4">
       <div className="w-full max-w-md">
-        <div className="text-center">
-          <span className="text-4xl font-black tracking-wide text-brand text-glow">
-            TWIST
-          </span>
-          <p className="mt-2 text-sm text-stone-500">لوحة تحكم الإدارة</p>
+        <div className="flex flex-col items-center text-center">
+          <TwistLogo name="TWIST" size="lg" />
+          <p className="mt-3 text-sm text-stone-500">لوحة تحكم الإدارة</p>
         </div>
 
         {!configured && (

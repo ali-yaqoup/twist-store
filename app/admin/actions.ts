@@ -83,18 +83,24 @@ export async function saveCategory(formData: FormData): Promise<ActionResult> {
   const name = String(formData.get("name") ?? "").trim();
   const slugInput = String(formData.get("slug") ?? "").trim();
   const icon = String(formData.get("icon") ?? "").trim() || null;
+  const imageUrl = String(formData.get("image_url") ?? "").trim() || null;
 
   if (!name) return { ok: false, error: "اسم الفئة مطلوب" };
   const slug = slugInput ? slugify(slugInput) : slugify(name);
 
   const { error } = id
-    ? await supabase.from("categories").update({ name, slug, icon }).eq("id", id)
-    : await supabase.from("categories").insert({ name, slug, icon });
+    ? await supabase.from("categories").update({ name, slug, icon, image_url: imageUrl }).eq("id", id)
+    : await supabase.from("categories").insert({ name, slug, icon, image_url: imageUrl });
 
   if (error) {
     return {
       ok: false,
-      error: error.code === "23505" ? "يوجد فئة بنفس المعرّف (slug)" : "تعذر حفظ الفئة",
+      error:
+        error.code === "23505"
+          ? "يوجد فئة بنفس المعرّف (slug)"
+          : error.message?.includes("image_url")
+            ? "تعذر حفظ صورة الفئة — شغّل supabase/migrations/0005_category_images.sql"
+            : "تعذر حفظ الفئة",
     };
   }
 

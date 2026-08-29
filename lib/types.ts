@@ -12,6 +12,7 @@ export interface Category {
   name: string;
   slug: string;
   icon: string | null;
+  image_url: string | null;
   created_at: string;
 }
 

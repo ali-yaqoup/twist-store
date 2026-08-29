@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminNav from "@/components/admin/AdminNav";
 import SignOutButton from "@/components/admin/SignOutButton";
+import TwistLogo from "@/components/site/TwistLogo";
 import { getSiteSettings } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 
@@ -47,16 +48,18 @@ export default async function AdminPanelLayout({
   const settings = await getSiteSettings();
 
   return (
-    <div className="min-h-screen bg-night">
+    <div className="min-h-screen overflow-x-clip bg-night">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row">
         {/* الشريط الجانبي */}
         <aside className="shrink-0 lg:w-60">
           <div className="rounded-2xl border border-white/10 bg-night-card p-4 lg:sticky lg:top-6">
             <Link href="/admin/dashboard" className="mb-1 block px-2 py-2">
-              <span className="text-2xl font-black text-brand">{settings.shop_name}</span>
-              <span className="mr-2 text-xs text-stone-500">الإدارة</span>
+              <TwistLogo name={settings.shop_name} size="sm" />
+              <span className="mt-1 block text-[10px] tracking-wide text-stone-500">الإدارة</span>
             </Link>
-            <AdminNav />
+            <div className="-mx-1 overflow-x-auto">
+              <AdminNav />
+            </div>
             <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
               <Link
                 href="/"

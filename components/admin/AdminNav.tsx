@@ -20,14 +20,14 @@ export default function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-1.5">
+    <nav className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap lg:gap-1.5">
       {LINKS.map((link) => {
         const active = pathname.startsWith(link.href);
         return (
           <Link
             key={link.href}
             href={link.href}
-            className={`flex shrink-0 items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${
+            className={`flex min-h-11 shrink-0 items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${
               active
                 ? "bg-brand text-black"
                 : "text-stone-300 hover:bg-white/5 hover:text-brand"

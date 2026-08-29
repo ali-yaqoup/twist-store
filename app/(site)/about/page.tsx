@@ -9,12 +9,12 @@ export default async function AboutPage() {
   const settings = await getSiteSettings();
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
       <div className="text-center">
-        <h1 className="text-4xl font-black text-stone-50 sm:text-5xl">
+        <h1 className="font-display text-3xl font-extrabold text-balance text-stone-50 sm:text-4xl lg:text-5xl">
           {settings.about_title}
         </h1>
-        <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand" />
+        <div className="mx-auto mt-5 h-px w-16 bg-gradient-to-l from-transparent via-brand to-brand" />
       </div>
 
       <div className="mx-auto mt-10 max-w-3xl space-y-6 text-center leading-9 text-stone-300">
@@ -28,31 +28,31 @@ export default async function AboutPage() {
           {settings.about_values.map((v) => (
             <div
               key={v.title}
-              className="rounded-2xl border border-white/10 bg-night-card p-6 transition-colors hover:border-brand/50"
+              className="card-luxe p-6"
             >
               <span className="text-3xl">{v.icon}</span>
-              <h2 className="mt-3 text-lg font-black text-brand">{v.title}</h2>
+              <h2 className="font-display mt-3 text-lg font-extrabold text-brand">{v.title}</h2>
               <p className="mt-2 text-sm leading-7 text-stone-400">{v.text}</p>
             </div>
           ))}
         </div>
       )}
 
-      <div className="mt-16 rounded-3xl border border-brand/30 bg-[radial-gradient(ellipse_at_center,rgba(245,196,0,0.08),transparent_70%)] p-10 text-center">
-        <h2 className="text-2xl font-black text-stone-50">{settings.about_cta_title}</h2>
+      <div className="mt-12 rounded-2xl border border-brand/25 bg-[radial-gradient(ellipse_at_center,rgba(245,196,0,0.08),transparent_70%)] p-6 text-center sm:mt-16 sm:p-10">
+        <h2 className="font-display text-xl font-extrabold text-stone-50 sm:text-2xl">{settings.about_cta_title}</h2>
         <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-stone-400">
           {settings.about_cta_text}
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
+        <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
           <Link
             href="/products"
-            className="rounded-full bg-brand px-8 py-3 font-extrabold text-black transition-colors hover:bg-brand-soft"
+            className="btn-gold w-full sm:w-auto"
           >
             {settings.hero_cta_label || "تسوّق الآن"}
           </Link>
           <Link
             href="/contact"
-            className="rounded-full border border-white/20 px-8 py-3 font-bold text-stone-200 transition-colors hover:border-brand hover:text-brand"
+            className="btn-outline w-full text-stone-200 sm:w-auto"
           >
             {settings.contact_title || "تواصل معنا"}
           </Link>

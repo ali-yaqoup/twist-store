@@ -1,3 +1,4 @@
+import { CATEGORY_FALLBACK_IMAGES } from "@/lib/category-images";
 import type { Category, GalleryImage, HeroSlide, Product, Testimonial } from "@/lib/types";
 
 const NOW = "2026-08-01T10:00:00.000Z";
@@ -7,11 +8,11 @@ function img(id: string, w = 900): string {
 }
 
 export const DEMO_CATEGORIES: Category[] = [
-  { id: "cat-tshirts", name: "تيشيرتات", slug: "tshirts", icon: "👕", created_at: NOW },
-  { id: "cat-hoodies", name: "هوديز", slug: "hoodies", icon: "🧥", created_at: NOW },
-  { id: "cat-uniforms", name: "يونيفورم", slug: "uniforms", icon: "🥼", created_at: NOW },
-  { id: "cat-caps", name: "قبعات", slug: "caps", icon: "🧢", created_at: NOW },
-  { id: "cat-polo", name: "بولو", slug: "polo", icon: "👔", created_at: NOW },
+  { id: "cat-tshirts", name: "تيشيرتات", slug: "tshirts", icon: "👕", image_url: CATEGORY_FALLBACK_IMAGES.tshirts, created_at: NOW },
+  { id: "cat-hoodies", name: "هوديز", slug: "hoodies", icon: "🧥", image_url: CATEGORY_FALLBACK_IMAGES.hoodies, created_at: NOW },
+  { id: "cat-uniforms", name: "يونيفورم", slug: "uniforms", icon: "🥼", image_url: CATEGORY_FALLBACK_IMAGES.uniforms, created_at: NOW },
+  { id: "cat-caps", name: "قبعات", slug: "caps", icon: "🧢", image_url: CATEGORY_FALLBACK_IMAGES.caps, created_at: NOW },
+  { id: "cat-polo", name: "بولو", slug: "polo", icon: "👔", image_url: CATEGORY_FALLBACK_IMAGES.polo, created_at: NOW },
 ];
 
 const cat = (slug: string) => {

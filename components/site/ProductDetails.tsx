@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import WishlistButton from "@/components/site/WishlistButton";
 import { formatPrice } from "@/lib/config";
+import { useIosTap } from "@/lib/ios-tap";
 import type { Product } from "@/lib/types";
 import { uploadPublicImage } from "@/lib/upload";
 
@@ -29,7 +30,7 @@ export default function ProductDetails({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
-  function handleAdd() {
+  const handleAdd = useCallback(() => {
     addItem({
       productId: product.id,
       name: product.name,
@@ -44,19 +45,23 @@ export default function ProductDetails({ product }: { product: Product }) {
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
-  }
+  }, [addItem, color, designUrl, note, product, quantity, serviceType, size]);
+
+  const addTap = useIosTap(handleAdd);
+  const decQtyTap = useIosTap(() => setQuantity((q) => Math.max(1, q - 1)));
+  const incQtyTap = useIosTap(() => setQuantity((q) => q + 1));
 
   return (
-    <div className="grid gap-10 lg:grid-cols-2">
+    <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
       {/* معرض الصور */}
       <div>
-        <div className="relative aspect-square overflow-hidden rounded-3xl border border-white/10 bg-night-card">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-brand/16 bg-night-card sm:aspect-square">
           <Image
             src={images[activeImage] ?? "/placeholder-product.svg"}
             alt={product.name}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover"
+            className="object-cover transition-transform duration-700 hover:scale-105"
             priority
           />
           <div className="absolute top-4 start-4 z-10">
@@ -70,7 +75,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                 key={i}
                 type="button"
                 onClick={() => setActiveImage(i)}
-                className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 transition-colors ${
+                className={`relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-xl border-2 transition-colors sm:h-20 sm:w-20 ${
                   activeImage === i ? "border-brand" : "border-white/10 hover:border-white/30"
                 }`}
               >
@@ -88,7 +93,7 @@ export default function ProductDetails({ product }: { product: Product }) {
       </div>
 
       {/* التفاصيل */}
-      <div>
+      <div className="min-w-0">
         {product.categories && (
           <Link
             href={`/products?category=${product.categories.slug}`}
@@ -97,10 +102,10 @@ export default function ProductDetails({ product }: { product: Product }) {
             {product.categories.name}
           </Link>
         )}
-        <h1 className="mt-2 text-3xl font-black text-stone-50 sm:text-4xl">
+        <h1 className="font-display mt-2 text-2xl font-extrabold text-stone-50 sm:text-3xl lg:text-4xl">
           {product.name}
         </h1>
-        <p className="mt-4 text-3xl font-extrabold text-brand">
+        <p className="font-display mt-4 text-2xl font-extrabold text-brand sm:text-3xl">
           {formatPrice(product.price)}
         </p>
 
@@ -119,10 +124,10 @@ export default function ProductDetails({ product }: { product: Product }) {
                     key={s}
                     type="button"
                     onClick={() => setSize(s)}
-                    className={`min-w-12 rounded-lg border px-4 py-2 text-sm font-bold transition-colors ${
+                    className={`min-h-11 min-w-11 touch-manipulation rounded-lg border px-4 py-2 text-sm font-bold transition-colors active:border-brand active:text-brand ${
                       size === s
                         ? "border-brand bg-brand text-black"
-                        : "border-white/15 text-stone-300 hover:border-brand hover:text-brand"
+                        : "border-brand/20 text-stone-300 hover:border-brand hover:text-brand"
                     }`}
                   >
                     {s}
@@ -142,10 +147,10 @@ export default function ProductDetails({ product }: { product: Product }) {
                     key={c}
                     type="button"
                     onClick={() => setColor(c)}
-                    className={`rounded-lg border px-4 py-2 text-sm font-bold transition-colors ${
+                    className={`min-h-11 touch-manipulation rounded-lg border px-4 py-2 text-sm font-bold transition-colors active:border-brand active:text-brand ${
                       color === c
                         ? "border-brand bg-brand text-black"
-                        : "border-white/15 text-stone-300 hover:border-brand hover:text-brand"
+                        : "border-brand/20 text-stone-300 hover:border-brand hover:text-brand"
                     }`}
                   >
                     {c}
@@ -159,7 +164,7 @@ export default function ProductDetails({ product }: { product: Product }) {
           {product.embroidery_or_print_type === "both" ? (
             <div>
               <h3 className="mb-2.5 text-sm font-bold text-stone-200">نوع الخدمة</h3>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {(
                   [
                     ["embroidery", "تطريز"],
@@ -170,10 +175,10 @@ export default function ProductDetails({ product }: { product: Product }) {
                     key={value}
                     type="button"
                     onClick={() => setServiceType(value)}
-                    className={`rounded-lg border px-5 py-2 text-sm font-bold transition-colors ${
+                    className={`min-h-11 rounded-lg border px-5 py-2 text-sm font-bold transition-colors ${
                       serviceType === value
                         ? "border-brand bg-brand text-black"
-                        : "border-white/15 text-stone-300 hover:border-brand hover:text-brand"
+                        : "border-brand/20 text-stone-300 hover:border-brand hover:text-brand"
                     }`}
                   >
                     {label}
@@ -200,7 +205,7 @@ export default function ProductDetails({ product }: { product: Product }) {
               onChange={(e) => setNote(e.target.value)}
               rows={3}
               placeholder="مثال: أريد تطريز اسم «TWIST» على الصدر بخيط ذهبي…"
-              className="w-full rounded-xl border border-white/10 bg-night px-4 py-3 text-sm text-stone-100 placeholder:text-stone-600 focus:border-brand focus:outline-none"
+              className="input-luxe"
             />
             <label className="mt-3 flex cursor-pointer flex-col items-start gap-2 rounded-xl border border-dashed border-white/15 px-4 py-3 text-sm text-stone-400 transition-colors hover:border-brand hover:text-brand">
               <span className="font-bold">
@@ -248,43 +253,43 @@ export default function ProductDetails({ product }: { product: Product }) {
           </div>
 
           {/* الكمية + إضافة */}
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center rounded-full border border-white/15">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex items-center self-start rounded-full border border-brand/20">
               <button
                 type="button"
-                aria-label="زيادة"
-                onClick={() => setQuantity((q) => q + 1)}
-                className="px-4 py-2.5 text-lg font-bold text-stone-200 hover:text-brand"
+                aria-label="إنقاص"
+                className="flex h-11 w-11 touch-manipulation items-center justify-center text-lg font-bold text-stone-200 active:text-brand"
+                {...decQtyTap}
               >
-                +
+                −
               </button>
               <span className="min-w-8 text-center font-bold text-stone-100">
                 {quantity}
               </span>
               <button
                 type="button"
-                aria-label="إنقاص"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="px-4 py-2.5 text-lg font-bold text-stone-200 hover:text-brand"
+                aria-label="زيادة"
+                className="flex h-11 w-11 touch-manipulation items-center justify-center text-lg font-bold text-stone-200 active:text-brand"
+                {...incQtyTap}
               >
-                −
+                +
               </button>
             </div>
             <button
               type="button"
-              onClick={handleAdd}
               disabled={uploadingDesign}
-              className={`glow-gold flex-1 rounded-full px-8 py-3.5 text-base font-extrabold transition-all sm:flex-none disabled:opacity-60 ${
+              className={`glow-gold min-h-11 w-full flex-1 touch-manipulation rounded-full px-8 py-3.5 text-base font-extrabold transition-all disabled:opacity-60 sm:w-auto ${
                 added
                   ? "bg-green-500 text-black"
-                  : "bg-brand text-black hover:bg-brand-soft"
+                  : "bg-brand text-black hover:bg-brand-soft hover:shadow-[0_0_28px_rgba(245,196,0,0.38)] active:scale-[0.98]"
               }`}
+              {...addTap}
             >
               {added ? "أُضيف للسلة ✓" : "أضف للسلة"}
             </button>
             <WishlistButton product={product} variant="label" />
             {added && (
-              <Link href="/cart" className="text-sm font-bold text-brand underline-offset-4 hover:underline">
+              <Link href="/cart" className="flex min-h-11 items-center text-sm font-bold text-brand underline-offset-4 hover:underline">
                 الذهاب للسلة ←
               </Link>
             )}

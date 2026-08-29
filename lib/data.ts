@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { CATEGORY_FALLBACK_IMAGES, categoryImageSrc, isImageSrc } from "@/lib/category-images";
 import { mergeSettings } from "@/lib/cms";
 import {
   DEMO_CATEGORIES,
@@ -9,6 +9,7 @@ import {
   filterDemoProducts,
 } from "@/lib/demo-catalog";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
 import type {
   Category,
   GalleryImage,
@@ -35,6 +36,47 @@ function asProduct(row: Product): Product {
   return { ...row, is_featured: Boolean(row.is_featured) };
 }
 
+async function firstProductImageByCategoryId(
+  categories: Category[]
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const needsLookup = categories.filter(
+    (c) =>
+      !isImageSrc(c.image_url) &&
+      !isImageSrc(c.icon) &&
+      !(c.slug in CATEGORY_FALLBACK_IMAGES)
+  );
+  if (needsLookup.length === 0) return map;
+
+  const live = await fromSupabase(async () => {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select("category_id, images")
+      .eq("is_active", true)
+      .not("category_id", "is", null);
+    if (error) throw error;
+    return data ?? [];
+  });
+
+  const rows =
+    live !== null
+      ? live
+      : DEMO_PRODUCTS.map((p) => ({
+          category_id: p.category_id,
+          images: p.images,
+        }));
+
+  for (const row of rows) {
+    const id = row.category_id as string | null;
+    const img = Array.isArray(row.images) ? row.images[0] : null;
+    if (id && typeof img === "string" && img && !map.has(id)) {
+      map.set(id, img);
+    }
+  }
+  return map;
+}
+
 export async function getCategories(): Promise<Category[]> {
   const live = await fromSupabase(async () => {
     const supabase = await createClient();
@@ -45,7 +87,12 @@ export async function getCategories(): Promise<Category[]> {
     if (error) throw error;
     return (data ?? []) as Category[];
   });
-  return live !== null ? live : DEMO_CATEGORIES;
+  const categories = live !== null ? live : DEMO_CATEGORIES;
+  const productImages = await firstProductImageByCategoryId(categories);
+  return categories.map((category) => ({
+    ...category,
+    image_url: categoryImageSrc(category, productImages.get(category.id) ?? null),
+  }));
 }
 
 export async function getProducts(options?: {

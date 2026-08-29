@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import { useSiteSettings } from "@/components/site/SiteContentProvider";
-import { formatPrice } from "@/lib/config";
+import { formatPrice, whatsappHref } from "@/lib/config";
 import { createOrder } from "./actions";
 
 export default function CheckoutPage() {
@@ -22,6 +22,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
 
   function buildWhatsAppMessage(orderId: string): string {
     const lines: string[] = [
@@ -81,9 +82,11 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (settings.whatsapp_number) {
-      const message = buildWhatsAppMessage(result.orderId);
-      const waUrl = `https://wa.me/${settings.whatsapp_number}?text=${encodeURIComponent(message)}`;
+    const message = buildWhatsAppMessage(result.orderId);
+    const waUrl = whatsappHref(settings.whatsapp_number, message);
+    setWhatsappUrl(waUrl);
+    // iOS Safari blocks window.open after an async submit — success page has a tap target.
+    if (waUrl) {
       window.open(waUrl, "_blank", "noopener,noreferrer");
     }
 
@@ -94,19 +97,32 @@ export default function CheckoutPage() {
   if (done) {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center sm:px-6">
-        <span className="text-6xl">🎉</span>
-        <h1 className="mt-6 text-3xl font-black text-stone-50">تم استلام طلبك!</h1>
+        <span className="font-display text-5xl font-extrabold text-brand">✓</span>
+        <h1 className="font-display mt-6 text-3xl font-extrabold text-stone-50">تم استلام طلبك!</h1>
         <p className="mt-4 leading-8 text-stone-400">
-          حفظنا طلبك وفتحنا لك محادثة واتساب لتأكيده مع فريقنا.
-          إذا ما انفتحت المحادثة تلقائياً، تواصل معنا مباشرة.
+          {whatsappUrl
+            ? "حفظنا طلبك. أكّده مع المحل عبر واتساب — إذا ما انفتحت المحادثة تلقائياً اضغط الزر تحت."
+            : "حفظنا طلبك. أضف رقم واتساب من لوحة الإدارة ليصل الطلب مباشرة للمحل، أو تواصل معنا من صفحة الاتصال."}
         </p>
-        <button
-          type="button"
-          onClick={() => router.push("/products")}
-          className="mt-8 rounded-full bg-brand px-8 py-3 font-extrabold text-black transition-colors hover:bg-brand-soft"
-        >
-          متابعة التسوق
-        </button>
+        <div className="mt-8 flex flex-col items-center gap-3">
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-gold glow-gold w-full max-w-sm touch-manipulation"
+            >
+              فتح واتساب لتأكيد الطلب
+            </a>
+          )}
+          <button
+            type="button"
+            onClick={() => router.push("/products")}
+            className={whatsappUrl ? "btn-outline w-full max-w-sm" : "btn-gold"}
+          >
+            متابعة التسوق
+          </button>
+        </div>
       </div>
     );
   }
@@ -114,11 +130,11 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center sm:px-6">
-        <h1 className="text-3xl font-black text-stone-50">السلة فارغة</h1>
+        <h1 className="font-display text-3xl font-extrabold text-stone-50">السلة فارغة</h1>
         <p className="mt-4 text-stone-400">أضف منتجات للسلة قبل إتمام الطلب.</p>
         <Link
           href="/products"
-          className="mt-8 inline-block rounded-full bg-brand px-8 py-3 font-extrabold text-black transition-colors hover:bg-brand-soft"
+          className="btn-gold mt-8"
         >
           تصفح المنتجات
         </Link>
@@ -126,16 +142,15 @@ export default function CheckoutPage() {
     );
   }
 
-  const inputClass =
-    "w-full rounded-xl border border-white/10 bg-night px-4 py-3 text-sm text-stone-100 placeholder:text-stone-600 focus:border-brand focus:outline-none";
+  const inputClass = "input-luxe";
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <h1 className="text-3xl font-black text-stone-50 sm:text-4xl">إتمام الطلب</h1>
-      <div className="mt-3 h-1 w-16 rounded-full bg-brand" />
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
+      <h1 className="font-display text-2xl font-extrabold text-stone-50 sm:text-3xl lg:text-4xl">إتمام الطلب</h1>
+      <div className="mt-4 h-px w-16 bg-gradient-to-l from-transparent via-brand to-brand" />
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_320px]">
-        <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-white/10 bg-night-card p-6 sm:p-8">
+        <form onSubmit={handleSubmit} className="card-luxe space-y-5 p-4 sm:p-6 md:p-8">
           <div>
             <label htmlFor="name" className="mb-2 block text-sm font-bold text-stone-200">
               الاسم الكامل <span className="text-brand">*</span>
@@ -144,6 +159,7 @@ export default function CheckoutPage() {
               id="name"
               required
               value={form.name}
+              autoComplete="name"
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="اسمك الثلاثي"
               className={inputClass}
@@ -159,6 +175,7 @@ export default function CheckoutPage() {
               required
               type="tel"
               dir="ltr"
+              autoComplete="tel"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="07XXXXXXXX"
@@ -174,6 +191,7 @@ export default function CheckoutPage() {
               id="address"
               required
               value={form.address}
+              autoComplete="street-address"
               onChange={(e) => setForm({ ...form, address: e.target.value })}
               placeholder="المدينة، الحي، أقرب معلم"
               className={inputClass}
@@ -203,7 +221,7 @@ export default function CheckoutPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="glow-gold w-full rounded-full bg-brand py-4 text-base font-extrabold text-black transition-colors hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-gold glow-gold w-full touch-manipulation py-3.5 text-sm disabled:cursor-not-allowed disabled:opacity-60 sm:py-4 sm:text-base"
           >
             {submitting ? "جارٍ إرسال الطلب…" : "تأكيد الطلب وإرساله عبر واتساب"}
           </button>
@@ -213,9 +231,9 @@ export default function CheckoutPage() {
         </form>
 
         {/* ملخص */}
-        <aside className="h-fit rounded-2xl border border-white/10 bg-night-card p-6 lg:sticky lg:top-24">
-          <h2 className="text-lg font-black text-stone-100">طلبك</h2>
-          <ul className="mt-4 space-y-3 border-b border-white/10 pb-4 text-sm">
+        <aside className="card-luxe h-fit p-6 lg:sticky lg:top-24">
+          <h2 className="font-display text-lg font-extrabold text-stone-100">طلبك</h2>
+          <ul className="mt-4 space-y-3 border-b border-brand/15 pb-4 text-sm">
             {items.map((item, i) => (
               <li key={i} className="flex justify-between gap-3 text-stone-300">
                 <span className="line-clamp-1">
@@ -229,7 +247,7 @@ export default function CheckoutPage() {
           </ul>
           <div className="mt-4 flex items-center justify-between">
             <span className="font-bold text-stone-100">المجموع</span>
-            <span className="text-2xl font-black text-brand">{formatPrice(total)}</span>
+            <span className="font-display text-2xl font-extrabold text-brand">{formatPrice(total)}</span>
           </div>
         </aside>
       </div>

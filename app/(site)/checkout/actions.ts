@@ -1,7 +1,9 @@
 "use server";
 
 import { randomUUID } from "crypto";
+import { DEMO_PRODUCTS } from "@/lib/demo-catalog";
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export interface CheckoutItemInput {
   productId: string;
@@ -38,6 +40,19 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
   }
   if (input.items.length === 0) {
     return { ok: false, error: "السلة فارغة" };
+  }
+
+  if (!isSupabaseConfigured()) {
+    const priceMap = new Map(DEMO_PRODUCTS.map((p) => [p.id, Number(p.price)]));
+    const validItems = input.items.filter((i) => priceMap.has(i.productId));
+    if (validItems.length === 0) {
+      return { ok: false, error: "منتجات السلة لم تعد متوفرة" };
+    }
+    const total = validItems.reduce(
+      (sum, i) => sum + (priceMap.get(i.productId) ?? 0) * Math.max(1, i.quantity),
+      0
+    );
+    return { ok: true, orderId: randomUUID(), total };
   }
 
   const supabase = await createClient();

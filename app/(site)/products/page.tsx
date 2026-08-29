@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ProductCard from "@/components/site/ProductCard";
 import ProductFilters from "@/components/site/ProductFilters";
+import PageHeading from "@/components/site/PageHeading";
 import { getCategories, getProducts, getSiteSettings } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -30,15 +31,11 @@ export default async function ProductsPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <h1 className="text-3xl font-black text-stone-50 sm:text-4xl">
-        {settings.products_title}
-      </h1>
-      <div className="mt-3 h-1 w-16 rounded-full bg-brand" />
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
+      <PageHeading title={settings.products_title} />
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[260px_1fr]">
-        {/* الفلاتر */}
-        <aside className="h-fit rounded-2xl border border-white/10 bg-night-card p-5 lg:sticky lg:top-24">
+      <div className="mt-8 grid gap-6 lg:mt-10 lg:grid-cols-[260px_1fr] lg:gap-8">
+        <aside className="card-luxe h-fit p-4 sm:p-5 lg:sticky lg:top-24">
           <ProductFilters
             categories={categories}
             current={{
@@ -49,16 +46,15 @@ export default async function ProductsPage({
           />
         </aside>
 
-        {/* الشبكة */}
-        <div>
+        <div className="min-w-0">
           {products.length > 0 ? (
-            <div className="grid grid-cols-2 gap-4 sm:gap-6 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
-            <p className="rounded-2xl border border-dashed border-white/15 py-24 text-center text-stone-500">
+            <p className="card-luxe py-24 text-center text-stone-500">
               {settings.products_empty}
             </p>
           )}
