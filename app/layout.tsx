@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo, Tajawal } from "next/font/google";
 import "./globals.css";
 import { getSiteSettings } from "@/lib/data";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="ar" dir="rtl" className={`${tajawal.variable} ${cairo.variable} h-full overflow-x-hidden antialiased`}>
       <body className="flex min-h-full max-w-full flex-col overflow-x-hidden bg-night text-stone-100">
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
