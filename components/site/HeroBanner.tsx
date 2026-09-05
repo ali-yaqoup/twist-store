@@ -46,8 +46,8 @@ export default function HeroBanner({
     go(dx > 0 ? -1 : 1);
   }
 
-  const overlay = (
-    <div className="relative z-10 mx-auto flex min-h-[70svh] w-full max-w-3xl flex-col items-center justify-center px-4 py-16 text-center sm:min-h-[78svh] sm:px-6 sm:py-24 lg:min-h-[86svh] lg:py-36">
+  const copy = (
+    <>
       {settings.hero_badge && (
         <span className="rounded-full border border-brand/40 bg-black/55 px-3.5 py-1.5 text-[10px] font-bold tracking-[0.14em] text-brand shadow-[0_4px_20px_rgba(0,0,0,0.5)] backdrop-blur-md sm:px-4 sm:text-[11px] sm:tracking-[0.18em]">
           {settings.hero_badge}
@@ -83,7 +83,7 @@ export default function HeroBanner({
           </Link>
         )}
       </div>
-    </div>
+    </>
   );
 
   if (count === 0) {
@@ -91,14 +91,16 @@ export default function HeroBanner({
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(245,196,0,0.16),transparent_58%)]" />
         <div className="pattern-tatreez pointer-events-none absolute inset-0 opacity-30" />
-        {overlay}
+        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-3xl flex-col items-center justify-center px-4 py-16 text-center sm:min-h-[calc(100svh-4.75rem)] sm:px-6 sm:py-24">
+          {copy}
+        </div>
       </section>
     );
   }
 
   return (
     <section
-      className="relative overflow-hidden"
+      className="relative overflow-hidden bg-night"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -123,13 +125,14 @@ export default function HeroBanner({
             fill
             priority={i === 0}
             sizes="100vw"
-            className={`object-cover object-center ${i === index ? "hero-kenburns" : ""}`}
+            className="object-cover object-center"
           />
         </div>
       ))}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-night via-night/75 to-black/50" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(0,0,0,0.55)_100%)]" />
-      {overlay}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-night/80 via-night/25 to-black/30" />
+      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-3xl flex-col items-center justify-center px-4 py-16 text-center sm:min-h-[calc(100svh-4.75rem)] sm:px-6 sm:py-24">
+        {copy}
+      </div>
       {count > 1 && (
         <>
           <div className="absolute inset-x-0 bottom-3 z-20 flex justify-center gap-0.5 sm:bottom-7 sm:gap-1">
@@ -149,44 +152,22 @@ export default function HeroBanner({
               </button>
             ))}
           </div>
-          <div className="absolute inset-x-0 bottom-[4.25rem] z-20 flex justify-between px-3 sm:hidden">
-            <button
-              type="button"
-              aria-label="الصورة التالية"
-              onClick={() => go(1)}
-              className="icon-action touch-manipulation"
-            >
-              ›
-            </button>
-            <button
-              type="button"
-              aria-label="الصورة السابقة"
-              onClick={() => go(-1)}
-              className="icon-action touch-manipulation"
-            >
-              ‹
-            </button>
-          </div>
-          <div className="absolute top-1/2 right-3 z-20 hidden -translate-y-1/2 sm:block md:right-4">
-            <button
-              type="button"
-              aria-label="الصورة السابقة"
-              onClick={() => go(-1)}
-              className="icon-action touch-manipulation"
-            >
-              ‹
-            </button>
-          </div>
-          <div className="absolute top-1/2 left-3 z-20 hidden -translate-y-1/2 sm:block md:left-4">
-            <button
-              type="button"
-              aria-label="الصورة التالية"
-              onClick={() => go(1)}
-              className="icon-action touch-manipulation"
-            >
-              ›
-            </button>
-          </div>
+          <button
+            type="button"
+            aria-label="الصورة السابقة"
+            onClick={() => go(-1)}
+            className="icon-action absolute top-1/2 right-3 z-20 -translate-y-1/2 touch-manipulation md:right-4"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            aria-label="الصورة التالية"
+            onClick={() => go(1)}
+            className="icon-action absolute top-1/2 left-3 z-20 -translate-y-1/2 touch-manipulation md:left-4"
+          >
+            ›
+          </button>
         </>
       )}
     </section>

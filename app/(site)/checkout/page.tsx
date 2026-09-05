@@ -5,13 +5,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import CheckoutSteps from "@/components/site/CheckoutSteps";
-import { useSiteSettings } from "@/components/site/SiteContentProvider";
-import { formatPrice, whatsappHref } from "@/lib/config";
+import { formatPrice } from "@/lib/config";
 import { createOrder } from "./actions";
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
-  const settings = useSiteSettings();
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -23,36 +21,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
-  const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
-
-  function buildWhatsAppMessage(orderId: string): string {
-    const lines: string[] = [
-      `🧵 *طلب جديد من متجر ${settings.shop_name}*`,
-      "",
-      `👤 الاسم: ${form.name}`,
-      `📞 الهاتف: ${form.phone}`,
-      `📍 العنوان: ${form.address}`,
-    ];
-    if (form.notes.trim()) lines.push(`📝 ملاحظات: ${form.notes.trim()}`);
-    lines.push("", "🛍 *تفاصيل الطلب:*");
-    items.forEach((item, idx) => {
-      const details = [
-        item.size && `مقاس ${item.size}`,
-        item.color && `لون ${item.color}`,
-        item.serviceType && (item.serviceType === "embroidery" ? "تطريز" : "طباعة"),
-      ]
-        .filter(Boolean)
-        .join(" / ");
-      lines.push(
-        `${idx + 1}. ${item.name} × ${item.quantity}${details ? ` (${details})` : ""} — ${formatPrice(item.price * item.quantity)}`
-      );
-      if (item.note) lines.push(`   ملاحظة: ${item.note}`);
-      if (item.designUrl) lines.push(`   تصميم: ${item.designUrl}`);
-    });
-    lines.push("", `💰 *المجموع الكلي: ${formatPrice(total)}*`);
-    lines.push(`🔖 رقم الطلب: ${orderId.slice(0, 8)}`);
-    return lines.join("\n");
-  }
+  const [orderRef, setOrderRef] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -83,14 +52,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    const message = buildWhatsAppMessage(result.orderId);
-    const waUrl = whatsappHref(settings.whatsapp_number, message);
-    setWhatsappUrl(waUrl);
-    // iOS Safari blocks window.open after an async submit — success page has a tap target.
-    if (waUrl) {
-      window.open(waUrl, "_blank", "noopener,noreferrer");
-    }
-
+    setOrderRef(result.orderId.slice(0, 8));
     clearCart();
     setDone(true);
   }
@@ -102,25 +64,18 @@ export default function CheckoutPage() {
         <span className="font-display text-5xl font-extrabold text-brand">✓</span>
         <h1 className="font-display mt-6 text-3xl font-extrabold text-stone-50">تم استلام طلبك!</h1>
         <p className="mt-4 leading-8 text-stone-400">
-          {whatsappUrl
-            ? "حفظنا طلبك. أكّده مع المحل عبر واتساب — إذا ما انفتحت المحادثة تلقائياً اضغط الزر تحت."
-            : "حفظنا طلبك. أضف رقم واتساب من لوحة الإدارة ليصل الطلب مباشرة للمحل، أو تواصل معنا من صفحة الاتصال."}
+          وصل طلبك للمحل مباشرة. بنتواصل معك قريب لتأكيد التفاصيل والتوصيل.
         </p>
+        {orderRef && (
+          <p className="mt-3 text-sm text-stone-500">
+            رقم الطلب: <span className="font-bold tracking-wide text-brand" dir="ltr">{orderRef}</span>
+          </p>
+        )}
         <div className="mt-8 flex flex-col items-center gap-3">
-          {whatsappUrl && (
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-gold glow-gold w-full max-w-sm touch-manipulation"
-            >
-              فتح واتساب لتأكيد الطلب
-            </a>
-          )}
           <button
             type="button"
             onClick={() => router.push("/products")}
-            className={whatsappUrl ? "btn-outline w-full max-w-sm" : "btn-gold"}
+            className="btn-gold glow-gold w-full max-w-sm"
           >
             متابعة التسوق
           </button>
@@ -226,10 +181,10 @@ export default function CheckoutPage() {
             disabled={submitting}
             className="btn-gold glow-gold w-full touch-manipulation py-3.5 text-sm disabled:cursor-not-allowed disabled:opacity-60 sm:py-4 sm:text-base"
           >
-            {submitting ? "جارٍ إرسال الطلب…" : "تأكيد الطلب وإرساله عبر واتساب"}
+            {submitting ? "جارٍ إرسال الطلب…" : "تأكيد الطلب"}
           </button>
           <p className="text-center text-xs text-stone-500">
-            بعد التأكيد سيُحفظ طلبك وتُفتح محادثة واتساب مع المحل لإتمام التفاصيل
+            بعد التأكيد يوصل طلبك مباشرة للمحل، ونتواصل معك على رقمك
           </p>
         </form>
 

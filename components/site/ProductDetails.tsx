@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
+import ProductImageZoom from "@/components/site/ProductImageZoom";
 import WishlistButton from "@/components/site/WishlistButton";
 import { formatPrice } from "@/lib/config";
 import { useIosTap } from "@/lib/ios-tap";
@@ -54,20 +55,15 @@ export default function ProductDetails({ product }: { product: Product }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start lg:gap-12 xl:gap-16">
       {/* معرض الصور */}
-      <div className="lg:sticky lg:top-24">
-        <div className="image-frame relative aspect-[4/5] sm:aspect-square">
-          <Image
-            src={images[activeImage] ?? "/placeholder-product.svg"}
-            alt={product.name}
-            fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover transition-transform duration-700 hover:scale-105"
-            priority
-          />
+      <div className="overflow-visible lg:sticky lg:top-24">
+        <ProductImageZoom
+          src={images[activeImage] ?? "/placeholder-product.svg"}
+          alt={product.name}
+        >
           <div className="absolute top-4 start-4 z-10">
             <WishlistButton product={product} />
           </div>
-        </div>
+        </ProductImageZoom>
         {images.length > 1 && (
           <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
             {images.map((img, i) => (

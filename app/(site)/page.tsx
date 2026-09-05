@@ -34,7 +34,7 @@ export default async function HomePage() {
       {categories.length > 0 && (
         <section className="section-container section-py">
           <SectionTitle title={settings.categories_title} />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5">
             {categories.map((cat) => (
               <CategoryCard key={cat.id} category={cat} />
             ))}

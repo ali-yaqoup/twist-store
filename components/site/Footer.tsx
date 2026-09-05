@@ -3,6 +3,14 @@ import { whatsappHref } from "@/lib/config";
 import type { SiteSettings } from "@/lib/types";
 import TwistLogo from "@/components/site/TwistLogo";
 
+const NAV = [
+  { href: "/", label: "الرئيسية" },
+  { href: "/products", label: "المنتجات" },
+  { href: "/wishlist", label: "قائمة الأمنيات" },
+  { href: "/about", label: "من نحن" },
+  { href: "/contact", label: "تواصل معنا" },
+] as const;
+
 export default function Footer({ settings }: { settings: SiteSettings }) {
   const wa = whatsappHref(settings.whatsapp_number);
   const socials = [
@@ -13,86 +21,45 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
 
   return (
     <footer className="mt-auto border-t border-brand/12 bg-night-soft pb-safe">
-      <div
-        className={`mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-10 sm:grid-cols-2 sm:gap-10 sm:px-6 sm:py-14 md:gap-8 lg:gap-12 ${
-          socials.length > 0 ? "lg:grid-cols-4" : "lg:grid-cols-3"
-        }`}
-      >
-        <div>
-          <TwistLogo name={settings.shop_name} size="md" />
-          {settings.footer_blurb && (
-            <p className="mt-5 max-w-xs text-sm leading-7 text-stone-400">
-              {settings.footer_blurb}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <h3 className="font-display mb-4 text-sm font-bold tracking-wide text-stone-100">
-            روابط سريعة
-          </h3>
-          <ul className="space-y-0.5 text-sm text-stone-400">
-            <li><Link href="/" className="inline-flex min-h-11 items-center transition-colors hover:text-brand">الرئيسية</Link></li>
-            <li><Link href="/products" className="inline-flex min-h-11 items-center transition-colors hover:text-brand">المنتجات</Link></li>
-            <li><Link href="/wishlist" className="inline-flex min-h-11 items-center transition-colors hover:text-brand">قائمة الأمنيات</Link></li>
-            <li><Link href="/about" className="inline-flex min-h-11 items-center transition-colors hover:text-brand">من نحن</Link></li>
-            <li><Link href="/contact" className="inline-flex min-h-11 items-center transition-colors hover:text-brand">تواصل معنا</Link></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 className="font-display mb-5 text-sm font-bold tracking-wide text-stone-100">
-            تواصل معنا
-          </h3>
-          <ul className="space-y-2.5 text-sm text-stone-400">
-            {settings.contact_phone && <li dir="ltr" className="text-start sm:text-right">{settings.contact_phone}</li>}
-            {settings.email && <li dir="ltr" className="break-all text-start sm:text-right">{settings.email}</li>}
-            {settings.address && <li>{settings.address}</li>}
-            {wa && (
-              <li>
-                <a
-                  href={wa}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-brand"
-                >
-                  واتساب المحل
-                </a>
-              </li>
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+          <div className="min-w-0">
+            <TwistLogo name={settings.shop_name} size="sm" />
+            {settings.footer_blurb && (
+              <p className="mt-2 line-clamp-2 max-w-sm text-[11px] leading-5 text-stone-500 sm:line-clamp-3">
+                {settings.footer_blurb}
+              </p>
             )}
-            <li>
-              <Link href="/contact" className="inline-flex min-h-11 items-center transition-colors hover:text-brand">
-                أرسل رسالة من الموقع
+          </div>
+
+          <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-stone-400 sm:justify-end sm:text-xs">
+            {NAV.map((link) => (
+              <Link key={link.href} href={link.href} className="py-0.5 transition-colors hover:text-brand">
+                {link.label}
               </Link>
-            </li>
-          </ul>
+            ))}
+          </nav>
         </div>
 
-        {socials.length > 0 && (
-          <div>
-            <h3 className="font-display mb-5 text-sm font-bold tracking-wide text-stone-100">
-              تابعنا
-            </h3>
-            <ul className="space-y-2.5 text-sm text-stone-400">
-              {socials.map((s) => (
-                <li key={s.href}>
-                  <a
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center transition-colors hover:text-brand"
-                  >
-                    {s.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-stone-500">
+          {settings.contact_phone && <span dir="ltr">{settings.contact_phone}</span>}
+          {settings.email && <span dir="ltr" className="break-all">{settings.email}</span>}
+          {settings.address && <span>{settings.address}</span>}
+          {wa && (
+            <a href={wa} target="_blank" rel="noopener noreferrer" className="hover:text-brand">
+              واتساب
+            </a>
+          )}
+          {socials.map((s) => (
+            <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer" className="hover:text-brand">
+              {s.label}
+            </a>
+          ))}
+        </div>
       </div>
 
-      <div className="border-t border-brand/10 px-4 py-5 text-center text-[11px] tracking-wide text-stone-500">
-        © {new Date().getFullYear()} {settings.shop_name} — جميع الحقوق محفوظة
+      <div className="border-t border-brand/10 px-4 py-2 text-center text-[10px] text-stone-600">
+        © {new Date().getFullYear()} {settings.shop_name}
       </div>
     </footer>
   );
