@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import ProductDetails from "@/components/site/ProductDetails";
 import { getProductById } from "@/lib/data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 export async function generateMetadata({
   params,

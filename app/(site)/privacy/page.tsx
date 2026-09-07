@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getSiteSettings } from "@/lib/data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 export const metadata: Metadata = { title: "سياسة الخصوصية" };
 
 export default async function PrivacyPage() {

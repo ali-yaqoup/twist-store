@@ -1,7 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin } from "@/lib/admin-auth";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { SETTINGS_ID } from "@/lib/cms";
 import {
   LIMITS,
@@ -29,10 +30,36 @@ const ORDER_STATUSES: OrderStatus[] = [
 ];
 
 function revalidateStore() {
+  updateTag(CACHE_TAGS.settings);
+  updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.categories);
+  updateTag(CACHE_TAGS.gallery);
+  updateTag(CACHE_TAGS.hero);
+  updateTag(CACHE_TAGS.testimonials);
   revalidatePath("/");
   revalidatePath("/products");
   revalidatePath("/about");
   revalidatePath("/contact");
+  revalidatePath("/privacy");
+}
+
+function revalidateProducts() {
+  updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.categories);
+  revalidatePath("/");
+  revalidatePath("/products");
+}
+
+function revalidateCmsHome() {
+  updateTag(CACHE_TAGS.settings);
+  updateTag(CACHE_TAGS.hero);
+  updateTag(CACHE_TAGS.gallery);
+  updateTag(CACHE_TAGS.testimonials);
+  updateTag(CACHE_TAGS.products);
+  revalidatePath("/");
+  revalidatePath("/about");
+  revalidatePath("/contact");
+  revalidatePath("/privacy");
 }
 
 function slugify(text: string): string {
@@ -190,7 +217,7 @@ export async function saveProduct(payload: ProductPayload): Promise<ActionResult
 
   revalidatePath("/admin/products");
   revalidatePath("/admin/homepage");
-  revalidateStore();
+  revalidateProducts();
   if (payload.id) revalidatePath(`/products/${payload.id}`);
   return { ok: true };
 }
@@ -203,7 +230,8 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) return { ok: false, error: "تعذر حذف المنتج" };
   revalidatePath("/admin/products");
-  revalidateStore();
+  revalidateProducts();
+  revalidatePath(`/products/${id}`);
   return { ok: true };
 }
 
@@ -248,6 +276,7 @@ export async function addGalleryImage(
   });
   if (error) return { ok: false, error: "تعذر إضافة الصورة" };
   revalidatePath("/admin/gallery");
+  updateTag(CACHE_TAGS.gallery);
   revalidatePath("/");
   return { ok: true };
 }
@@ -270,6 +299,7 @@ export async function deleteGalleryImage(id: string): Promise<ActionResult> {
   if (row?.image_url) await removeStorageFile(row.image_url, "gallery");
 
   revalidatePath("/admin/gallery");
+  updateTag(CACHE_TAGS.gallery);
   revalidatePath("/");
   return { ok: true };
 }
@@ -331,6 +361,7 @@ export async function addHeroSlide(
   });
   if (error) return { ok: false, error: "تعذر إضافة صورة البانر — شغّل 0004_cms.sql" };
   revalidatePath("/admin/homepage");
+  updateTag(CACHE_TAGS.hero);
   revalidatePath("/");
   return { ok: true };
 }
@@ -351,6 +382,7 @@ export async function deleteHeroSlide(id: string): Promise<ActionResult> {
   if (row?.image_url) await removeStorageFile(row.image_url, "hero");
 
   revalidatePath("/admin/homepage");
+  updateTag(CACHE_TAGS.hero);
   revalidatePath("/");
   return { ok: true };
 }
@@ -382,6 +414,7 @@ export async function moveHeroSlide(
   await supabase.from("hero_slides").update({ sort_order: a.sort_order }).eq("id", b.id);
 
   revalidatePath("/admin/homepage");
+  updateTag(CACHE_TAGS.hero);
   revalidatePath("/");
   return { ok: true };
 }
@@ -504,7 +537,7 @@ export async function saveHomepage(payload: HomepagePayload): Promise<ActionResu
   }
 
   revalidatePath("/admin/products");
-  revalidateStore();
+  revalidateCmsHome();
   return { ok: true };
 }
 
@@ -567,6 +600,7 @@ export async function saveTestimonial(formData: FormData): Promise<ActionResult>
 
   if (error) return { ok: false, error: "تعذر حفظ الرأي — شغّل 0004_cms.sql" };
   revalidatePath("/admin/testimonials");
+  updateTag(CACHE_TAGS.testimonials);
   revalidatePath("/");
   return { ok: true };
 }
@@ -579,6 +613,7 @@ export async function deleteTestimonial(id: string): Promise<ActionResult> {
   const { error } = await supabase.from("testimonials").delete().eq("id", id);
   if (error) return { ok: false, error: "تعذر حذف الرأي" };
   revalidatePath("/admin/testimonials");
+  updateTag(CACHE_TAGS.testimonials);
   revalidatePath("/");
   return { ok: true };
 }

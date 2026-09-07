@@ -4,7 +4,7 @@ import ProductFilters from "@/components/site/ProductFilters";
 import PageHeading from "@/components/site/PageHeading";
 import { getCategories, getProducts, getSiteSettings } from "@/lib/data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();

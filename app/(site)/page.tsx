@@ -14,7 +14,8 @@ import {
   getTestimonials,
 } from "@/lib/data";
 
-export const dynamic = "force-dynamic";
+/** ISR: refresh public home at most every 2 minutes (also on-demand from admin) */
+export const revalidate = 120;
 
 export default async function HomePage() {
   const [settings, slides, categories, featured, gallery, testimonials] =
