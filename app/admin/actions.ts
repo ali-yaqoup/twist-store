@@ -1,9 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/admin-auth";
 import { SETTINGS_ID } from "@/lib/cms";
+import {
+  LIMITS,
+  isUuid,
+  sanitizeAppHref,
+  sanitizeHttpUrl,
+  sanitizeImageUrl,
+  sanitizeText,
+} from "@/lib/security";
 import { createClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { storagePathFromPublicUrl } from "@/lib/upload";
 import type { AboutValue, OrderStatus, ServiceType } from "@/lib/types";
 
@@ -12,16 +20,13 @@ export interface ActionResult {
   error?: string;
 }
 
-function requireDb(): ActionResult | null {
-  if (!isSupabaseConfigured()) {
-    return {
-      ok: false,
-      error:
-        "الحفظ يحتاج مشروع Supabase حقيقي. اضبط NEXT_PUBLIC_SUPABASE_URL و ANON_KEY ثم شغّل ملفات SQL من مجلد supabase/migrations.",
-    };
-  }
-  return null;
-}
+const ORDER_STATUSES: OrderStatus[] = [
+  "pending",
+  "in_progress",
+  "ready",
+  "delivered",
+  "cancelled",
+];
 
 function revalidateStore() {
   revalidatePath("/");
@@ -40,7 +45,7 @@ function slugify(text: string): string {
 }
 
 async function patchSettings(patch: Record<string, unknown>): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
 
   const supabase = await createClient();
@@ -75,15 +80,16 @@ async function removeStorageFile(url: string, bucket: "gallery" | "hero" | "prod
 // ================= الفئات =================
 
 export async function saveCategory(formData: FormData): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
 
   const supabase = await createClient();
   const id = String(formData.get("id") ?? "");
-  const name = String(formData.get("name") ?? "").trim();
-  const slugInput = String(formData.get("slug") ?? "").trim();
-  const icon = String(formData.get("icon") ?? "").trim() || null;
-  const imageUrl = String(formData.get("image_url") ?? "").trim() || null;
+  if (id && !isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
+  const name = sanitizeText(String(formData.get("name") ?? ""), LIMITS.name);
+  const slugInput = sanitizeText(String(formData.get("slug") ?? ""), 80);
+  const icon = sanitizeText(String(formData.get("icon") ?? ""), 16) || null;
+  const imageUrl = sanitizeImageUrl(String(formData.get("image_url") ?? "")) || null;
 
   if (!name) return { ok: false, error: "اسم الفئة مطلوب" };
   const slug = slugInput ? slugify(slugInput) : slugify(name);
@@ -110,8 +116,9 @@ export async function saveCategory(formData: FormData): Promise<ActionResult> {
 }
 
 export async function deleteCategory(id: string): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
+  if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
   const { error } = await supabase.from("categories").delete().eq("id", id);
   if (error) return { ok: false, error: "تعذر حذف الفئة" };
@@ -137,22 +144,39 @@ export interface ProductPayload {
 }
 
 export async function saveProduct(payload: ProductPayload): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
-  if (!payload.name.trim()) return { ok: false, error: "اسم المنتج مطلوب" };
-  if (!Number.isFinite(payload.price) || payload.price < 0) {
+  const name = sanitizeText(payload.name, LIMITS.productName);
+  if (!name) return { ok: false, error: "اسم المنتج مطلوب" };
+  if (
+    !Number.isFinite(payload.price) ||
+    payload.price < 0 ||
+    payload.price > LIMITS.productPriceMax
+  ) {
     return { ok: false, error: "السعر غير صالح" };
   }
+  if (payload.id && !isUuid(payload.id)) return { ok: false, error: "معرّف غير صالح" };
+  if (!["embroidery", "print", "both"].includes(payload.serviceType)) {
+    return { ok: false, error: "نوع الخدمة غير صالح" };
+  }
+  const categoryId =
+    payload.categoryId && isUuid(payload.categoryId) ? payload.categoryId : null;
 
   const supabase = await createClient();
   const row = {
-    name: payload.name.trim(),
-    description: payload.description.trim() || null,
+    name,
+    description: sanitizeText(payload.description, LIMITS.productDescription) || null,
     price: payload.price,
-    category_id: payload.categoryId,
-    images: payload.images,
-    sizes: payload.sizes,
-    colors: payload.colors,
+    category_id: categoryId,
+    images: payload.images.map(sanitizeImageUrl).filter(Boolean).slice(0, LIMITS.productImages),
+    sizes: payload.sizes
+      .map((s) => sanitizeText(String(s), 40))
+      .filter(Boolean)
+      .slice(0, LIMITS.productOptions),
+    colors: payload.colors
+      .map((c) => sanitizeText(String(c), 40))
+      .filter(Boolean)
+      .slice(0, LIMITS.productOptions),
     embroidery_or_print_type: payload.serviceType,
     is_active: payload.isActive,
     is_featured: payload.isFeatured,
@@ -172,8 +196,9 @@ export async function saveProduct(payload: ProductPayload): Promise<ActionResult
 }
 
 export async function deleteProduct(id: string): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
+  if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) return { ok: false, error: "تعذر حذف المنتج" };
@@ -188,8 +213,12 @@ export async function updateOrderStatus(
   orderId: string,
   status: OrderStatus
 ): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
+  if (!isUuid(orderId)) return { ok: false, error: "معرّف غير صالح" };
+  if (!ORDER_STATUSES.includes(status)) {
+    return { ok: false, error: "حالة الطلب غير صالحة" };
+  }
   const supabase = await createClient();
   const { error } = await supabase
     .from("orders")
@@ -208,12 +237,14 @@ export async function addGalleryImage(
   imageUrl: string,
   caption: string
 ): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
   const supabase = await createClient();
+  const safeUrl = sanitizeImageUrl(imageUrl);
+  if (!safeUrl) return { ok: false, error: "رابط الصورة غير صالح" };
   const { error } = await supabase.from("gallery_images").insert({
-    image_url: imageUrl,
-    caption: caption.trim() || null,
+    image_url: safeUrl,
+    caption: sanitizeText(caption, LIMITS.caption) || null,
   });
   if (error) return { ok: false, error: "تعذر إضافة الصورة" };
   revalidatePath("/admin/gallery");
@@ -222,8 +253,9 @@ export async function addGalleryImage(
 }
 
 export async function deleteGalleryImage(id: string): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
+  if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
 
   const { data: row } = await supabase
@@ -248,8 +280,9 @@ export async function toggleMessageRead(
   id: string,
   isRead: boolean
 ): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
+  if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
   const { error } = await supabase
     .from("contact_messages")
@@ -261,8 +294,9 @@ export async function toggleMessageRead(
 }
 
 export async function deleteMessage(id: string): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
+  if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
   const { error } = await supabase.from("contact_messages").delete().eq("id", id);
   if (error) return { ok: false, error: "تعذر حذف الرسالة" };
@@ -276,7 +310,7 @@ export async function addHeroSlide(
   imageUrl: string,
   altText: string
 ): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
   const supabase = await createClient();
   const { data: last } = await supabase
@@ -286,9 +320,12 @@ export async function addHeroSlide(
     .limit(1)
     .maybeSingle();
 
+  const safeUrl = sanitizeImageUrl(imageUrl);
+  if (!safeUrl) return { ok: false, error: "رابط الصورة غير صالح" };
+
   const { error } = await supabase.from("hero_slides").insert({
-    image_url: imageUrl,
-    alt_text: altText.trim() || null,
+    image_url: safeUrl,
+    alt_text: sanitizeText(altText, LIMITS.caption) || null,
     sort_order: (last?.sort_order ?? -1) + 1,
     is_active: true,
   });
@@ -299,8 +336,9 @@ export async function addHeroSlide(
 }
 
 export async function deleteHeroSlide(id: string): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
+  if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
   const { data: row } = await supabase
     .from("hero_slides")
@@ -321,8 +359,11 @@ export async function moveHeroSlide(
   id: string,
   direction: "up" | "down"
 ): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
+  if (!isUuid(id) || (direction !== "up" && direction !== "down")) {
+    return { ok: false, error: "طلب غير صالح" };
+  }
   const supabase = await createClient();
   const { data: slides, error } = await supabase
     .from("hero_slides")
@@ -369,26 +410,27 @@ export type SettingsPayload = {
 };
 
 export async function saveSiteSettings(payload: SettingsPayload): Promise<ActionResult> {
-  if (!payload.shop_name.trim()) return { ok: false, error: "اسم المتجر مطلوب" };
+  const shopName = sanitizeText(payload.shop_name, LIMITS.shopName);
+  if (!shopName) return { ok: false, error: "اسم المتجر مطلوب" };
   return patchSettings({
-    shop_name: payload.shop_name.trim(),
-    tagline: payload.tagline.trim(),
-    logo_url: payload.logo_url.trim(),
-    whatsapp_number: payload.whatsapp_number.replace(/[^\d]/g, ""),
-    contact_phone: payload.contact_phone.trim(),
-    address: payload.address.trim(),
-    email: payload.email.trim(),
-    instagram_url: payload.instagram_url.trim(),
-    facebook_url: payload.facebook_url.trim(),
-    tiktok_url: payload.tiktok_url.trim(),
-    footer_blurb: payload.footer_blurb.trim(),
-    contact_title: payload.contact_title.trim(),
-    contact_intro: payload.contact_intro.trim(),
-    contact_whatsapp_label: payload.contact_whatsapp_label.trim(),
-    contact_success_title: payload.contact_success_title.trim(),
-    contact_success_text: payload.contact_success_text.trim(),
-    products_title: payload.products_title.trim(),
-    products_empty: payload.products_empty.trim(),
+    shop_name: shopName,
+    tagline: sanitizeText(payload.tagline, 120),
+    logo_url: sanitizeImageUrl(payload.logo_url),
+    whatsapp_number: payload.whatsapp_number.replace(/[^\d]/g, "").slice(0, 15),
+    contact_phone: sanitizeText(payload.contact_phone, LIMITS.phone),
+    address: sanitizeText(payload.address, LIMITS.address),
+    email: sanitizeText(payload.email, 120),
+    instagram_url: sanitizeHttpUrl(payload.instagram_url),
+    facebook_url: sanitizeHttpUrl(payload.facebook_url),
+    tiktok_url: sanitizeHttpUrl(payload.tiktok_url),
+    footer_blurb: sanitizeText(payload.footer_blurb, 400),
+    contact_title: sanitizeText(payload.contact_title, 80),
+    contact_intro: sanitizeText(payload.contact_intro, 500),
+    contact_whatsapp_label: sanitizeText(payload.contact_whatsapp_label, 80),
+    contact_success_title: sanitizeText(payload.contact_success_title, 80),
+    contact_success_text: sanitizeText(payload.contact_success_text, 300),
+    products_title: sanitizeText(payload.products_title, 80),
+    products_empty: sanitizeText(payload.products_empty, 200),
   });
 }
 
@@ -416,26 +458,33 @@ export type HomepagePayload = {
 };
 
 export async function saveHomepage(payload: HomepagePayload): Promise<ActionResult> {
+  const featuredIds = [
+    ...new Set(payload.featuredProductIds.filter(isUuid)),
+  ].slice(0, LIMITS.featuredProducts);
+
   const settingsResult = await patchSettings({
-    hero_badge: payload.hero_badge.trim(),
-    hero_title: payload.hero_title.trim(),
-    hero_highlight: payload.hero_highlight.trim(),
-    hero_subtitle: payload.hero_subtitle.trim(),
-    hero_cta_label: payload.hero_cta_label.trim(),
-    hero_cta_href: payload.hero_cta_href.trim() || "/products",
-    hero_secondary_cta_label: payload.hero_secondary_cta_label.trim(),
-    hero_secondary_cta_href: payload.hero_secondary_cta_href.trim() || "/contact",
-    categories_title: payload.categories_title.trim(),
-    featured_title: payload.featured_title.trim(),
-    featured_subtitle: payload.featured_subtitle.trim(),
-    featured_cta: payload.featured_cta.trim(),
-    gallery_title: payload.gallery_title.trim(),
-    gallery_subtitle: payload.gallery_subtitle.trim(),
-    home_about_title: payload.home_about_title.trim(),
-    home_about_text: payload.home_about_text.trim(),
-    home_about_bullets: payload.home_about_bullets.filter(Boolean),
-    home_about_cta: payload.home_about_cta.trim(),
-    testimonials_title: payload.testimonials_title.trim(),
+    hero_badge: sanitizeText(payload.hero_badge, LIMITS.cmsTitle),
+    hero_title: sanitizeText(payload.hero_title, LIMITS.cmsTitle),
+    hero_highlight: sanitizeText(payload.hero_highlight, LIMITS.cmsTitle),
+    hero_subtitle: sanitizeText(payload.hero_subtitle, LIMITS.cmsText),
+    hero_cta_label: sanitizeText(payload.hero_cta_label, LIMITS.cmsTitle),
+    hero_cta_href: sanitizeAppHref(payload.hero_cta_href, "/products"),
+    hero_secondary_cta_label: sanitizeText(payload.hero_secondary_cta_label, LIMITS.cmsTitle),
+    hero_secondary_cta_href: sanitizeAppHref(payload.hero_secondary_cta_href, "/contact"),
+    categories_title: sanitizeText(payload.categories_title, LIMITS.cmsTitle),
+    featured_title: sanitizeText(payload.featured_title, LIMITS.cmsTitle),
+    featured_subtitle: sanitizeText(payload.featured_subtitle, LIMITS.cmsText),
+    featured_cta: sanitizeText(payload.featured_cta, LIMITS.cmsTitle),
+    gallery_title: sanitizeText(payload.gallery_title, LIMITS.cmsTitle),
+    gallery_subtitle: sanitizeText(payload.gallery_subtitle, LIMITS.cmsText),
+    home_about_title: sanitizeText(payload.home_about_title, LIMITS.cmsTitle),
+    home_about_text: sanitizeText(payload.home_about_text, LIMITS.cmsText),
+    home_about_bullets: payload.home_about_bullets
+      .map((b) => sanitizeText(b, 200))
+      .filter(Boolean)
+      .slice(0, 8),
+    home_about_cta: sanitizeText(payload.home_about_cta, LIMITS.cmsTitle),
+    testimonials_title: sanitizeText(payload.testimonials_title, LIMITS.cmsTitle),
   });
   if (!settingsResult.ok) return settingsResult;
 
@@ -446,11 +495,11 @@ export async function saveHomepage(payload: HomepagePayload): Promise<ActionResu
     .neq("id", "00000000-0000-0000-0000-000000000000");
   if (clearError) return { ok: false, error: "تعذر تحديث المنتجات المميزة" };
 
-  if (payload.featuredProductIds.length > 0) {
+  if (featuredIds.length > 0) {
     const { error } = await supabase
       .from("products")
       .update({ is_featured: true })
-      .in("id", payload.featuredProductIds);
+      .in("id", featuredIds);
     if (error) return { ok: false, error: "تعذر تحديد المنتجات المميزة" };
   }
 
@@ -469,23 +518,34 @@ export type AboutPayload = {
 
 export async function saveAbout(payload: AboutPayload): Promise<ActionResult> {
   return patchSettings({
-    about_title: payload.about_title.trim(),
-    about_paragraphs: payload.about_paragraphs.map((p) => p.trim()).filter(Boolean),
-    about_values: payload.about_values.filter((v) => v.title.trim() || v.text.trim()),
-    about_cta_title: payload.about_cta_title.trim(),
-    about_cta_text: payload.about_cta_text.trim(),
+    about_title: sanitizeText(payload.about_title, LIMITS.cmsTitle),
+    about_paragraphs: payload.about_paragraphs
+      .map((p) => sanitizeText(p, LIMITS.cmsText))
+      .filter(Boolean)
+      .slice(0, 12),
+    about_values: payload.about_values
+      .map((v) => ({
+        icon: sanitizeText(v.icon ?? "", 16),
+        title: sanitizeText(v.title, LIMITS.cmsTitle),
+        text: sanitizeText(v.text, LIMITS.cmsText),
+      }))
+      .filter((v) => v.title || v.text)
+      .slice(0, 8),
+    about_cta_title: sanitizeText(payload.about_cta_title, LIMITS.cmsTitle),
+    about_cta_text: sanitizeText(payload.about_cta_text, LIMITS.cmsText),
   });
 }
 
 // ================= الآراء =================
 
 export async function saveTestimonial(formData: FormData): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
 
   const id = String(formData.get("id") ?? "");
-  const name = String(formData.get("name") ?? "").trim();
-  const quote = String(formData.get("quote") ?? "").trim();
+  if (id && !isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
+  const name = sanitizeText(String(formData.get("name") ?? ""), LIMITS.name);
+  const quote = sanitizeText(String(formData.get("quote") ?? ""), LIMITS.testimonial);
   const rating = Math.min(5, Math.max(1, Number(formData.get("rating") ?? 5) || 5));
   const isActive = String(formData.get("is_active") ?? "true") === "true";
 
@@ -512,8 +572,9 @@ export async function saveTestimonial(formData: FormData): Promise<ActionResult>
 }
 
 export async function deleteTestimonial(id: string): Promise<ActionResult> {
-  const blocked = requireDb();
+  const blocked = await requireAdmin();
   if (blocked) return blocked;
+  if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
   const { error } = await supabase.from("testimonials").delete().eq("id", id);
   if (error) return { ok: false, error: "تعذر حذف الرأي" };

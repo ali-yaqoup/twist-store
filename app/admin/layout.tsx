@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: {
     default: "إدارة TWIST",
     template: "%s | إدارة TWIST",
   },
+  robots: { index: false, follow: false },
 };
 
 export default function AdminRootLayout({

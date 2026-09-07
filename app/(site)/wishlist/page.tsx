@@ -11,7 +11,7 @@ import { formatPrice } from "@/lib/config";
 import type { WishlistItem } from "@/lib/types";
 
 export default function WishlistPage() {
-  const { items, removeItem } = useWishlist();
+  const { items, ready, removeItem } = useWishlist();
   const { addItem } = useCart();
   const [addedId, setAddedId] = useState<string | null>(null);
 
@@ -39,7 +39,9 @@ export default function WishlistPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
       <PageHeading title="قائمة الأمنيات" />
 
-      {items.length === 0 ? (
+      {!ready ? (
+        <div className="card-luxe mt-8 h-40 animate-pulse" aria-hidden />
+      ) : items.length === 0 ? (
         <EmptyState
           icon="heart"
           title="قائمة الأمنيات فاضية"

@@ -106,14 +106,16 @@ function CartLineItem({
 }
 
 export default function CartPage() {
-  const { items, total, updateQuantity, removeItem } = useCart();
+  const { items, total, ready, updateQuantity, removeItem } = useCart();
 
   return (
     <div className="section-container py-8 sm:py-12">
       <PageHeading title="سلة التسوق" />
       <CheckoutSteps current={1} />
 
-      {items.length === 0 ? (
+      {!ready ? (
+        <div className="card-luxe mt-10 h-40 animate-pulse" aria-hidden />
+      ) : items.length === 0 ? (
         <EmptyState
           icon="bag"
           title="سلتك فاضية"

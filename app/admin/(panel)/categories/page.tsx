@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CategoryManager from "@/components/admin/CategoryManager";
+import { AdminPageHeader } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/server";
 import type { Category } from "@/lib/types";
 
@@ -15,7 +16,10 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-black text-stone-50">الفئات</h1>
+      <AdminPageHeader
+        title="الفئات"
+        description="فئات المتجر اللي الزبون بصفّي فيها المنتجات."
+      />
       <CategoryManager categories={(data ?? []) as Category[]} />
     </div>
   );

@@ -1,3 +1,4 @@
+import { sanitizeAppHref, sanitizeHttpUrl, sanitizeImageUrl } from "@/lib/security";
 import type { AboutValue, SiteSettings } from "@/lib/types";
 
 export const SETTINGS_ID = "default";
@@ -102,9 +103,19 @@ export function mergeSettings(row?: Partial<SiteSettings> | null): SiteSettings 
     merged.about_values = DEFAULT_SITE_SETTINGS.about_values;
   }
 
-  merged.logo_url = merged.logo_url ?? "";
-  merged.whatsapp_number =
-    merged.whatsapp_number || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
+  merged.logo_url = sanitizeImageUrl(merged.logo_url ?? "");
+  merged.whatsapp_number = (merged.whatsapp_number || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").replace(
+    /[^\d]/g,
+    ""
+  );
+  merged.instagram_url = sanitizeHttpUrl(merged.instagram_url);
+  merged.facebook_url = sanitizeHttpUrl(merged.facebook_url);
+  merged.tiktok_url = sanitizeHttpUrl(merged.tiktok_url);
+  merged.hero_cta_href = sanitizeAppHref(merged.hero_cta_href, "/products");
+  merged.hero_secondary_cta_href = sanitizeAppHref(
+    merged.hero_secondary_cta_href,
+    "/contact"
+  );
 
   return merged;
 }

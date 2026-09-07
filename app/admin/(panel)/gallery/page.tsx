@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import GalleryManager from "@/components/admin/GalleryManager";
+import { AdminPageHeader } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/server";
 import type { GalleryImage } from "@/lib/types";
 
@@ -15,7 +16,10 @@ export default async function AdminGalleryPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-black text-stone-50">معرض الأعمال</h1>
+      <AdminPageHeader
+        title="معرض الأعمال"
+        description="صور التنفيذ اللي بتظهر بالرئيسية."
+      />
       <GalleryManager images={(data ?? []) as GalleryImage[]} />
     </div>
   );

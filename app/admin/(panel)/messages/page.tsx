@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import MessagesList from "@/components/admin/MessagesList";
+import { AdminPageHeader } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/server";
 import type { ContactMessage } from "@/lib/types";
 
@@ -18,14 +19,17 @@ export default async function AdminMessagesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-end justify-between gap-4">
-        <h1 className="text-2xl font-black text-stone-50">رسائل التواصل</h1>
-        {unread > 0 && (
-          <span className="rounded-full bg-brand px-3 py-1 text-xs font-extrabold text-black">
-            {unread} غير مقروءة
-          </span>
-        )}
-      </div>
+      <AdminPageHeader
+        title="رسائل التواصل"
+        description="رد بسرعة من واتساب أو اتصال، وعلّم المقروء عشان ما تضيع رسالة."
+        actions={
+          unread > 0 ? (
+            <span className="rounded-full bg-brand px-3 py-1 text-xs font-extrabold text-black">
+              {unread} غير مقروءة
+            </span>
+          ) : undefined
+        }
+      />
       <MessagesList messages={messages} />
     </div>
   );

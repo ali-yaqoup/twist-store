@@ -48,6 +48,8 @@ Use the **anon** key only. Do not put the service role key in this app.
 | `supabase/migrations/0003_designs.sql` | Designs (needed if `0001` was applied before this existed) |
 | `supabase/migrations/0004_cms.sql` | Site settings, hero slides, testimonials, featured products, `hero` bucket |
 | `supabase/migrations/0005_category_images.sql` | Category cover photos (`image_url`) for homepage cards |
+| `supabase/migrations/0006_security.sql` | Length limits, order-price triggers, storage upload limits |
+| `supabase/migrations/0007_admin_uid.sql` | Bind admin role to `auth.uid()` (not email alone) |
 
 4. Authentication → Users → Add user (admin email + password).
 5. Grant admin access:

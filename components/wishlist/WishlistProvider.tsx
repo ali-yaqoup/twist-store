@@ -28,6 +28,7 @@ export function toWishlistItem(product: Product): WishlistItem {
 interface WishlistContextValue {
   items: WishlistItem[];
   count: number;
+  ready: boolean;
   isSaved: (productId: string) => boolean;
   toggleItem: (product: Product) => void;
   removeItem: (productId: string) => void;
@@ -92,11 +93,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     () => ({
       items,
       count: items.length,
+      ready: hydrated,
       isSaved,
       toggleItem,
       removeItem,
     }),
-    [items, isSaved, toggleItem, removeItem]
+    [items, hydrated, isSaved, toggleItem, removeItem]
   );
 
   return (

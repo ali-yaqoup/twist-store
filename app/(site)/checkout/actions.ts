@@ -2,6 +2,13 @@
 
 import { randomUUID } from "crypto";
 import { DEMO_PRODUCTS } from "@/lib/demo-catalog";
+import { clientKey, rateLimitOk } from "@/lib/rate-limit";
+import {
+  LIMITS,
+  isAllowedDesignUrl,
+  normalizePhone,
+  sanitizeText,
+} from "@/lib/security";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
@@ -30,26 +37,49 @@ export interface CheckoutResult {
   error?: string;
 }
 
-export async function createOrder(input: CheckoutInput): Promise<CheckoutResult> {
-  const name = input.customerName.trim();
-  const phone = input.customerPhone.trim();
-  const address = input.customerAddress.trim();
+function clampQty(n: number): number {
+  return Math.min(LIMITS.quantity, Math.max(1, Math.floor(Number(n) || 0)));
+}
 
-  if (!name || !phone || !address) {
-    return { ok: false, error: "الرجاء تعبئة الاسم ورقم الهاتف والعنوان" };
+export async function createOrder(input: CheckoutInput): Promise<CheckoutResult> {
+  const key = await clientKey("checkout");
+  if (!rateLimitOk(key, 8, 15 * 60 * 1000)) {
+    return { ok: false, error: "طلبات كثيرة. حاول بعد قليل." };
   }
-  if (input.items.length === 0) {
+
+  const name = sanitizeText(input.customerName, LIMITS.name);
+  const phone = normalizePhone(input.customerPhone);
+  const address = sanitizeText(input.customerAddress, LIMITS.address);
+  const notes = sanitizeText(input.notes ?? "", LIMITS.notes);
+
+  if (!name || name.length < 2 || !phone || !address || address.length < 5) {
+    return { ok: false, error: "الرجاء تعبئة الاسم ورقم الهاتف والعنوان بشكل صحيح" };
+  }
+  if (!Array.isArray(input.items) || input.items.length === 0) {
     return { ok: false, error: "السلة فارغة" };
   }
+  if (input.items.length > LIMITS.cartLines) {
+    return { ok: false, error: "عدد المنتجات في الطلب أكبر من المسموح" };
+  }
+
+  const rawItems = input.items.slice(0, LIMITS.cartLines).map((i) => ({
+    productId: String(i.productId ?? "").slice(0, 80),
+    quantity: clampQty(i.quantity),
+    size: i.size ? sanitizeText(String(i.size), 40) : null,
+    color: i.color ? sanitizeText(String(i.color), 40) : null,
+    serviceType: i.serviceType === "embroidery" || i.serviceType === "print" ? i.serviceType : null,
+    note: i.note ? sanitizeText(String(i.note), LIMITS.itemNote) : null,
+    designUrl: i.designUrl && isAllowedDesignUrl(i.designUrl) ? i.designUrl : null,
+  }));
 
   if (!isSupabaseConfigured()) {
     const priceMap = new Map(DEMO_PRODUCTS.map((p) => [p.id, Number(p.price)]));
-    const validItems = input.items.filter((i) => priceMap.has(i.productId));
+    const validItems = rawItems.filter((i) => priceMap.has(i.productId));
     if (validItems.length === 0) {
       return { ok: false, error: "منتجات السلة لم تعد متوفرة" };
     }
     const total = validItems.reduce(
-      (sum, i) => sum + (priceMap.get(i.productId) ?? 0) * Math.max(1, i.quantity),
+      (sum, i) => sum + (priceMap.get(i.productId) ?? 0) * i.quantity,
       0
     );
     return { ok: true, orderId: randomUUID(), total };
@@ -57,8 +87,7 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
 
   const supabase = await createClient();
 
-  // جلب الأسعار الحقيقية من قاعدة البيانات (لا نثق بأسعار المتصفح)
-  const productIds = [...new Set(input.items.map((i) => i.productId))];
+  const productIds = [...new Set(rawItems.map((i) => i.productId))];
   const { data: products, error: productsError } = await supabase
     .from("products")
     .select("id, name, price")
@@ -70,17 +99,16 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
   }
 
   const priceMap = new Map(products.map((p) => [p.id, Number(p.price)]));
-  const validItems = input.items.filter((i) => priceMap.has(i.productId));
+  const validItems = rawItems.filter((i) => priceMap.has(i.productId));
   if (validItems.length === 0) {
     return { ok: false, error: "منتجات السلة لم تعد متوفرة" };
   }
 
   const total = validItems.reduce(
-    (sum, i) => sum + (priceMap.get(i.productId) ?? 0) * Math.max(1, i.quantity),
+    (sum, i) => sum + (priceMap.get(i.productId) ?? 0) * i.quantity,
     0
   );
 
-  // إدراج بدون .select() حتى لا نحتاج صلاحية قراءة للطلبات
   const orderId = randomUUID();
 
   const { error: orderError } = await supabase.from("orders").insert({
@@ -88,7 +116,7 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
     customer_name: name,
     customer_phone: phone,
     customer_address: address,
-    notes: input.notes.trim() || null,
+    notes: notes || null,
     status: "pending",
     total_price: total,
   });
@@ -101,7 +129,7 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
     validItems.map((i) => ({
       order_id: orderId,
       product_id: i.productId,
-      quantity: Math.max(1, i.quantity),
+      quantity: i.quantity,
       selected_size: i.size,
       selected_color: i.color,
       service_type: i.serviceType,

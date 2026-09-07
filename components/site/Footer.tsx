@@ -58,8 +58,17 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
         </div>
       </div>
 
-      <div className="border-t border-brand/10 px-4 py-2 text-center text-[10px] text-stone-600">
-        © {new Date().getFullYear()} {settings.shop_name}
+      <div className="border-t border-brand/10 px-4 py-2 text-center text-[10px] text-stone-600" suppressHydrationWarning>
+        <p>
+          © {new Date().getFullYear()} {settings.shop_name}
+          {" · "}
+          <Link href="/privacy" className="hover:text-brand">
+            سياسة الخصوصية
+          </Link>
+        </p>
+        <Link href="/admin/login" className="mt-1 inline-block hover:text-brand">
+          إدارة المتجر
+        </Link>
       </div>
     </footer>
   );

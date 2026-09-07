@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import TwistLogo from "@/components/site/TwistLogo";
+import { gateAdminLogin } from "./actions";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -24,13 +25,28 @@ export default function AdminLoginPage() {
     setError(null);
     setLoading(true);
 
+    const gate = await gateAdminLogin();
+    if (!gate.ok) {
+      setError(gate.error);
+      setLoading(false);
+      return;
+    }
+
     const supabase = createClient();
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     });
 
     if (signInError) {
+      setError("بيانات الدخول غير صحيحة");
+      setLoading(false);
+      return;
+    }
+
+    const { data: adminRow } = await supabase.from("admins").select("id").maybeSingle();
+    if (!adminRow) {
+      await supabase.auth.signOut();
       setError("بيانات الدخول غير صحيحة");
       setLoading(false);
       return;
@@ -41,49 +57,27 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-night px-4">
+    <div className="flex min-h-screen items-center justify-center bg-night px-4 py-10">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center text-center">
           <TwistLogo name="TWIST" size="lg" />
-          <p className="mt-3 text-sm text-stone-500">لوحة تحكم الإدارة</p>
+          <p className="mt-3 text-sm text-stone-400">لوحة تحكم الإدارة</p>
+          <p className="mt-1 text-xs text-stone-600">دخول خاص بصاحب المتجر</p>
         </div>
 
         {!configured && (
           <div className="mt-8 space-y-3 rounded-2xl border border-brand/30 bg-night-card p-6 text-sm leading-7 text-stone-300">
             <p className="font-bold text-brand">Supabase غير مربوط بعد</p>
-            <ol className="list-decimal space-y-2 pr-5 text-stone-400">
-              <li>
-                أنشئ مشروعاً على{" "}
-                <a
-                  className="text-brand underline"
-                  href="https://supabase.com/dashboard"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  supabase.com
-                </a>
-              </li>
-              <li>
-                انسخ URL ومفتاح anon إلى <code className="text-stone-200">.env.local</code>
-              </li>
-              <li>
-                شغّل ملفات SQL بالترتيب من <code className="text-stone-200">supabase/migrations</code>
-              </li>
-              <li>Authentication → Users → أضف مستخدم أدمن</li>
-              <li>
-                <code className="text-xs text-stone-200">
-                  insert into public.admins (email) values (&apos;your-admin@email.com&apos;);
-                </code>
-              </li>
-              <li>أعد تشغيل npm run dev ثم سجّل الدخول من هنا</li>
-            </ol>
+            <p className="text-stone-400">
+              اربط المشروع من ملف البيئة ثم أضف مستخدم الأدمن من لوحة Supabase.
+            </p>
           </div>
         )}
 
         {configured && (
         <form
           onSubmit={handleSubmit}
-          className="mt-8 space-y-5 rounded-2xl border border-white/10 bg-night-card p-8"
+          className="mt-8 space-y-5 rounded-2xl border border-brand/15 bg-night-card p-8 shadow-[0_0_48px_rgba(245,196,0,0.06)]"
         >
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-bold text-stone-200">
@@ -91,12 +85,15 @@ export default function AdminLoginPage() {
             </label>
             <input
               id="email"
+              name="email"
               type="email"
               required
+              maxLength={120}
+              autoComplete="username"
               dir="ltr"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-night px-4 py-3 text-sm text-stone-100 focus:border-brand focus:outline-none"
+              className="input-luxe"
             />
           </div>
           <div>
@@ -105,12 +102,15 @@ export default function AdminLoginPage() {
             </label>
             <input
               id="password"
+              name="password"
               type="password"
               required
+              maxLength={128}
+              autoComplete="current-password"
               dir="ltr"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-night px-4 py-3 text-sm text-stone-100 focus:border-brand focus:outline-none"
+              className="input-luxe"
             />
           </div>
 
@@ -123,10 +123,16 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-brand py-3 font-extrabold text-black transition-colors hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-gold w-full !rounded-xl"
           >
             {loading ? "جارٍ الدخول…" : "تسجيل الدخول"}
           </button>
+          <p className="text-center text-xs leading-6 text-stone-500">
+            إعادة كلمة السر تتم من لوحة Supabase: Authentication → Users
+          </p>
+          <a href="/" className="block text-center text-xs font-bold text-stone-500 hover:text-brand">
+            العودة للمتجر
+          </a>
         </form>
         )}
       </div>

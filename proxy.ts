@@ -3,18 +3,23 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  const noStore = () => {
+    const next = NextResponse.next({ request });
+    next.headers.set("Cache-Control", "private, no-store, no-cache, must-revalidate");
+    return next;
+  };
+
+  let response = noStore();
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const { pathname } = request.nextUrl;
-  const isLoginPage = pathname === "/admin/login";
+  const isLoginPage = request.nextUrl.pathname === "/admin/login";
 
   if (!isSupabaseConfigured() || !supabaseUrl || !supabaseKey) {
     if (!isLoginPage) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
-      url.searchParams.set("next", pathname);
+      url.search = "";
       return NextResponse.redirect(url);
     }
     return response;
@@ -30,7 +35,7 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          response = NextResponse.next({ request });
+          response = noStore();
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
@@ -42,14 +47,29 @@ export async function proxy(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    const { data: adminRow } = user
+      ? await supabase.from("admins").select("id").maybeSingle()
+      : { data: null };
+    const isAdmin = Boolean(adminRow);
+
     if (!user && !isLoginPage) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
-      url.searchParams.set("next", pathname);
+      url.search = "";
       return NextResponse.redirect(url);
     }
 
-    if (user && isLoginPage) {
+    if (user && !isAdmin) {
+      if (!isLoginPage) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/admin/login";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
+      return response;
+    }
+
+    if (user && isAdmin && isLoginPage) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/dashboard";
       url.search = "";
@@ -59,7 +79,7 @@ export async function proxy(request: NextRequest) {
     if (!isLoginPage) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
-      url.searchParams.set("next", pathname);
+      url.search = "";
       return NextResponse.redirect(url);
     }
   }

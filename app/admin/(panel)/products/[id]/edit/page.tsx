@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductForm from "@/components/admin/ProductForm";
+import { AdminPageHeader } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/server";
 import type { Category, Product } from "@/lib/types";
 
@@ -24,11 +26,13 @@ export default async function EditProductPage({
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-black text-stone-50">تعديل المنتج</h1>
-      <ProductForm
-        product={product as Product}
-        categories={(categories ?? []) as Category[]}
-      />
+      <Link href="/admin/products" className="text-sm font-bold text-stone-400 hover:text-brand">
+        ← كل المنتجات
+      </Link>
+      <div className="mt-4">
+        <AdminPageHeader title="تعديل المنتج" description={(product as Product).name} />
+      </div>
+      <ProductForm product={product as Product} categories={(categories ?? []) as Category[]} />
     </div>
   );
 }

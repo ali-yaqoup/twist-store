@@ -7,6 +7,7 @@ import { useCart } from "@/components/cart/CartProvider";
 import ProductImageZoom from "@/components/site/ProductImageZoom";
 import WishlistButton from "@/components/site/WishlistButton";
 import { formatPrice } from "@/lib/config";
+import { LIMITS } from "@/lib/security";
 import { useIosTap } from "@/lib/ios-tap";
 import type { Product } from "@/lib/types";
 import { uploadPublicImage } from "@/lib/upload";
@@ -50,7 +51,7 @@ export default function ProductDetails({ product }: { product: Product }) {
 
   const addTap = useIosTap(handleAdd);
   const decQtyTap = useIosTap(() => setQuantity((q) => Math.max(1, q - 1)));
-  const incQtyTap = useIosTap(() => setQuantity((q) => q + 1));
+  const incQtyTap = useIosTap(() => setQuantity((q) => Math.min(LIMITS.quantity, q + 1)));
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start lg:gap-12 xl:gap-16">
@@ -192,7 +193,8 @@ export default function ProductDetails({ product }: { product: Product }) {
             </h3>
             <textarea
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) => setNote(e.target.value.slice(0, 300))}
+              maxLength={300}
               rows={3}
               placeholder="مثال: أريد تطريز اسم «TWIST» على الصدر بخيط ذهبي…"
               className="input-luxe"
@@ -208,7 +210,7 @@ export default function ProductDetails({ product }: { product: Product }) {
               <span className="text-xs text-stone-500">JPG أو PNG أو WEBP — حتى 5 ميغابايت</span>
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
+                accept="image/jpeg,image/png,image/webp"
                 hidden
                 onChange={async (e) => {
                   const file = e.target.files?.[0];

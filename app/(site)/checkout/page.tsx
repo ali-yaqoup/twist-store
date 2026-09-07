@@ -9,7 +9,7 @@ import { formatPrice } from "@/lib/config";
 import { createOrder } from "./actions";
 
 export default function CheckoutPage() {
-  const { items, total, clearCart } = useCart();
+  const { items, total, ready, clearCart } = useCart();
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -84,6 +84,14 @@ export default function CheckoutPage() {
     );
   }
 
+  if (!ready) {
+    return (
+      <div className="section-container py-8 sm:py-12">
+        <div className="card-luxe h-40 animate-pulse" aria-hidden />
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center sm:px-6">
@@ -116,6 +124,7 @@ export default function CheckoutPage() {
             <input
               id="name"
               required
+              maxLength={80}
               value={form.name}
               autoComplete="name"
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -134,6 +143,7 @@ export default function CheckoutPage() {
               type="tel"
               dir="ltr"
               autoComplete="tel"
+              maxLength={20}
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="07XXXXXXXX"
@@ -148,6 +158,7 @@ export default function CheckoutPage() {
             <input
               id="address"
               required
+              maxLength={200}
               value={form.address}
               autoComplete="street-address"
               onChange={(e) => setForm({ ...form, address: e.target.value })}
@@ -163,6 +174,7 @@ export default function CheckoutPage() {
             <textarea
               id="notes"
               rows={3}
+              maxLength={500}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               placeholder="أي تفاصيل إضافية عن طلبك…"
@@ -184,7 +196,11 @@ export default function CheckoutPage() {
             {submitting ? "جارٍ إرسال الطلب…" : "تأكيد الطلب"}
           </button>
           <p className="text-center text-xs text-stone-500">
-            بعد التأكيد يوصل طلبك مباشرة للمحل، ونتواصل معك على رقمك
+            بعد التأكيد يوصل طلبك مباشرة للمحل، ونتواصل معك على رقمك.
+            بياناتك تُستخدم لتجهيز الطلب فقط —{" "}
+            <Link href="/privacy" className="text-brand hover:underline">
+              سياسة الخصوصية
+            </Link>
           </p>
         </form>
 

@@ -1,5 +1,7 @@
 "use server";
 
+import { clientKey, rateLimitOk } from "@/lib/rate-limit";
+import { LIMITS, normalizePhone, sanitizeText } from "@/lib/security";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
@@ -9,12 +11,22 @@ export interface ContactResult {
 }
 
 export async function sendContactMessage(formData: FormData): Promise<ContactResult> {
-  const name = String(formData.get("name") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const message = String(formData.get("message") ?? "").trim();
+  const honeypot = String(formData.get("website") ?? "").trim();
+  if (honeypot) {
+    return { ok: true };
+  }
 
-  if (!name || !phone || !message) {
-    return { ok: false, error: "الرجاء تعبئة جميع الحقول" };
+  const key = await clientKey("contact");
+  if (!rateLimitOk(key, 5, 15 * 60 * 1000)) {
+    return { ok: false, error: "رسائل كثيرة. حاول بعد قليل." };
+  }
+
+  const name = sanitizeText(String(formData.get("name") ?? ""), LIMITS.name);
+  const phone = normalizePhone(String(formData.get("phone") ?? ""));
+  const message = sanitizeText(String(formData.get("message") ?? ""), LIMITS.message);
+
+  if (!name || name.length < 2 || !phone || !message || message.length < 5) {
+    return { ok: false, error: "الرجاء تعبئة جميع الحقول بشكل صحيح" };
   }
 
   if (!isSupabaseConfigured()) {

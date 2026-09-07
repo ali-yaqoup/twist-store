@@ -21,8 +21,8 @@ const NAV_LINKS = [
 const LG_QUERY = "(min-width: 1024px)";
 
 export default function Header() {
-  const { count } = useCart();
-  const { count: wishCount } = useWishlist();
+  const { count, ready: cartReady } = useCart();
+  const { count: wishCount, ready: wishReady } = useWishlist();
   const settings = useSiteSettings();
   const pathname = usePathname();
   const menuId = useId();
@@ -167,7 +167,7 @@ export default function Header() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill={wishCount > 0 ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
-              {wishCount > 0 && (
+              {wishReady && wishCount > 0 && (
                 <span className="pointer-events-none absolute -top-1.5 -left-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-black">
                   {wishCount}
                 </span>
@@ -184,7 +184,7 @@ export default function Header() {
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
               </svg>
-              {count > 0 && (
+              {cartReady && count > 0 && (
                 <span className="pointer-events-none absolute -top-1.5 -left-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-black">
                   {count}
                 </span>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useSiteSettings } from "@/components/site/SiteContentProvider";
 import { sendContactMessage } from "./actions";
@@ -65,14 +66,22 @@ export default function ContactPage() {
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="card-luxe mt-12 space-y-5 p-4 sm:p-6 md:p-8"
+          className="card-luxe relative mt-12 space-y-5 p-4 sm:p-6 md:p-8"
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label htmlFor="name" className="mb-2 block text-sm font-bold text-stone-200">
                 الاسم <span className="text-brand">*</span>
               </label>
-              <input id="name" name="name" required autoComplete="name" placeholder="اسمك" className={inputClass} />
+              <input
+                id="name"
+                name="name"
+                required
+                maxLength={80}
+                autoComplete="name"
+                placeholder="اسمك"
+                className={inputClass}
+              />
             </div>
             <div>
               <label htmlFor="phone" className="mb-2 block text-sm font-bold text-stone-200">
@@ -85,6 +94,7 @@ export default function ContactPage() {
                 type="tel"
                 dir="ltr"
                 autoComplete="tel"
+                maxLength={20}
                 placeholder="07XXXXXXXX"
                 className={`${inputClass} text-right`}
               />
@@ -99,9 +109,15 @@ export default function ContactPage() {
               name="message"
               required
               rows={5}
+              maxLength={2000}
               placeholder="اكتب استفسارك أو تفاصيل مشروعك…"
               className={inputClass}
             />
+          </div>
+
+          <div className="pointer-events-none absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+            <label htmlFor="website">الموقع</label>
+            <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
           </div>
 
           {error && (
@@ -117,6 +133,12 @@ export default function ContactPage() {
           >
             {status === "sending" ? "جارٍ الإرسال…" : "إرسال الرسالة"}
           </button>
+          <p className="text-center text-xs text-stone-500">
+            نستخدم بياناتك للرد عليك فقط —{" "}
+            <Link href="/privacy" className="text-brand hover:underline">
+              سياسة الخصوصية
+            </Link>
+          </p>
         </form>
       )}
     </div>

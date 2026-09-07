@@ -25,7 +25,7 @@ export default function OrderStatusSelect({
           await updateOrderStatus(orderId, status);
         });
       }}
-      className="rounded-lg border border-white/15 bg-night px-3 py-2 text-sm font-bold text-stone-100 focus:border-brand focus:outline-none disabled:opacity-60"
+      className="min-h-10 w-full rounded-xl border border-white/15 bg-night px-3 py-2 text-sm font-bold text-stone-100 focus:border-brand focus:outline-none disabled:opacity-60 sm:w-auto"
     >
       {STATUSES.map((s) => (
         <option key={s} value={s}>
