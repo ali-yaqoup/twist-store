@@ -1,10 +1,10 @@
-﻿# TWIST
+# TWIST
 
 Premium Arabic RTL storefront for custom embroidery and print on apparel.
 
-Ù…ØªØ¬Ø± Ø¹Ø±Ø¨ÙŠ (RTL) Ù„Ø¨Ø±Ø§Ù†Ø¯ **TWIST** â€” ØªØ·Ø±ÙŠØ² ÙˆØ·Ø¨Ø§Ø¹Ø© Ø¹Ù„Ù‰ Ø§Ù„Ù…Ù„Ø§Ø¨Ø³.
+متجر عربي (RTL) لبراند **TWIST** — تطريز وطباعة على الملابس.
 
-**Stack:** Next.js 16 (App Router) Â· TypeScript Â· Tailwind CSS 4 Â· Supabase (Auth, Postgres, Storage)
+**Stack:** Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · Supabase (Auth, Postgres, Storage)
 
 ## Run locally
 
@@ -26,10 +26,10 @@ Copy `.env.example` to `.env.local`. Never commit `.env.local`.
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_KEY
 NEXT_PUBLIC_WHATSAPP_NUMBER=962790000000
-NEXT_PUBLIC_CURRENCY=â‚ª
+NEXT_PUBLIC_CURRENCY=₪
 ```
 
-WhatsApp number is international digits only (no `+`). It can later be changed from **Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ù…ÙˆÙ‚Ø¹** in admin.
+متجر عربي (RTL) لبراند **TWIST** — تطريز وطباعة على الملابس.
 
 Use the **anon** key only. Do not put the service role key in this app.
 
@@ -38,7 +38,7 @@ Use the **anon** key only. Do not put the service role key in this app.
 ### Cloud (recommended without Docker)
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Fill `.env.local` from Project Settings â†’ API (URL + anon key).
+2. Fill `.env.local` from Project Settings → API (URL + anon key).
 3. Run SQL in the dashboard **SQL Editor** in this order (or `npx supabase db push` after `npx supabase link`):
 
 | File | Purpose |
@@ -51,7 +51,7 @@ Use the **anon** key only. Do not put the service role key in this app.
 | `supabase/migrations/0006_security.sql` | Length limits, order-price triggers, storage upload limits |
 | `supabase/migrations/0007_admin_uid.sql` | Bind admin role to `auth.uid()` (not email alone) |
 
-4. Authentication â†’ Users â†’ Add user (admin email + password).
+4. Authentication → Users → Add user (admin email + password).
 5. Grant admin access:
 
 ```sql
@@ -78,7 +78,7 @@ Then add an Auth user in local Studio and insert that email into `public.admins`
 
 ## Store routes
 
-`/` Â· `/products` Â· `/products/[id]` Â· `/cart` Â· `/wishlist` Â· `/checkout` Â· `/about` Â· `/contact`
+`/` · `/products` · `/products/[id]` · `/cart` · `/wishlist` · `/checkout` · `/about` · `/contact`
 
 ## Admin
 
@@ -105,3 +105,5 @@ CMS tables live in `0004_cms.sql`: `site_settings`, `hero_slides`, `testimonials
 Copyright © 2026 Ali Yaqoub. All rights reserved.
 
 This software and its contents are proprietary. Unauthorized copying, distribution, modification, or commercial use is prohibited without prior written permission from the copyright holder.
+
+See the [LICENSE](./LICENSE) file for the full notice.
