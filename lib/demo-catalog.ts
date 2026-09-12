@@ -1,4 +1,13 @@
 import { CATEGORY_FALLBACK_IMAGES } from "@/lib/category-images";
+import {
+  BLIGHTNM_PATCH,
+  DEMO_QALANDIYA_ID,
+  HIJRA_PATCH,
+  QALANDIYA_PATCH,
+  STOREFRONT_GALLERY,
+  STOREFRONT_HERO,
+  WATANAN_PATCH,
+} from "@/lib/storefront-photos";
 import type { Category, GalleryImage, HeroSlide, Product, Testimonial } from "@/lib/types";
 
 const NOW = "2026-08-01T10:00:00.000Z";
@@ -26,55 +35,29 @@ const cat = (slug: string) => {
 export const DEMO_PRODUCTS: Product[] = [
   {
     id: "demo-tshirt-classic",
-    name: "تيشيرت قطن كلاسيك",
-    description:
-      "تيشيرت قطن 100٪ بوزن متوسط ولمسة ناعمة. مثالي لتطريز الشعار على الصدر أو طباعة التصميم على الظهر. خامة تتحمّل الغسيل المتكرر دون بهتان.",
-    price: 79,
-    images: [
-      img("photo-1521572163474-6864f9cf17ab"),
-      img("photo-1562157873-818bc0726f68"),
-    ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["أسود", "أبيض", "كحلي"],
-    embroidery_or_print_type: "both",
+    ...HIJRA_PATCH,
     is_active: true,
-    is_featured: true,
     created_at: NOW,
     ...cat("tshirts"),
   },
   {
     id: "demo-tshirt-black",
-    name: "تيشيرت أسود أوفرسايز",
-    description:
-      "قصة واسعة عصرية بكتف ساقط. مثالي للطباعة DTF أو السلك سكرين على مساحة كبيرة. يظهر التصميم الذهبي والفاتح بشكل فاخر.",
-    price: 89,
-    images: [
-      img("photo-1583743814966-8936f5b7be1a"),
-      img("photo-1576566588028-4147f3842f27"),
-    ],
-    sizes: ["M", "L", "XL", "XXL"],
-    colors: ["أسود", "رمادي"],
-    embroidery_or_print_type: "print",
+    ...WATANAN_PATCH,
     is_active: true,
-    is_featured: true,
     created_at: NOW,
     ...cat("tshirts"),
   },
   {
     id: "demo-tshirt-graphic",
-    name: "تيشيرت طباعة فنية",
-    description:
-      "قطعة جاهزة لتطبيق تصميمك الفني على الصدر أو كامل الواجهة. طباعة عالية الدقة تثبت مع الغسيل.",
-    price: 95,
-    images: [
-      img("photo-1576566588028-4147f3842f27"),
-      img("photo-1523381210434-271e8be1f52b"),
-    ],
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["أبيض", "أسود", "رمادي"],
-    embroidery_or_print_type: "print",
+    ...BLIGHTNM_PATCH,
     is_active: true,
-    is_featured: true,
+    created_at: NOW,
+    ...cat("tshirts"),
+  },
+  {
+    id: DEMO_QALANDIYA_ID,
+    ...QALANDIYA_PATCH,
+    is_active: true,
     created_at: NOW,
     ...cat("tshirts"),
   },
@@ -92,7 +75,7 @@ export const DEMO_PRODUCTS: Product[] = [
     colors: ["أسود", "كحلي", "رمادي"],
     embroidery_or_print_type: "embroidery",
     is_active: true,
-    is_featured: true,
+    is_featured: false,
     created_at: NOW,
     ...cat("hoodies"),
   },
@@ -110,7 +93,7 @@ export const DEMO_PRODUCTS: Product[] = [
     colors: ["أسود", "أبيض", "رمادي"],
     embroidery_or_print_type: "both",
     is_active: true,
-    is_featured: true,
+    is_featured: false,
     created_at: NOW,
     ...cat("hoodies"),
   },
@@ -128,7 +111,7 @@ export const DEMO_PRODUCTS: Product[] = [
     colors: ["أسود", "رمادي", "كحلي"],
     embroidery_or_print_type: "print",
     is_active: true,
-    is_featured: true,
+    is_featured: false,
     created_at: NOW,
     ...cat("hoodies"),
   },
@@ -146,7 +129,7 @@ export const DEMO_PRODUCTS: Product[] = [
     colors: ["كحلي", "أسود", "أبيض"],
     embroidery_or_print_type: "embroidery",
     is_active: true,
-    is_featured: true,
+    is_featured: false,
     created_at: NOW,
     ...cat("uniforms"),
   },
@@ -164,7 +147,7 @@ export const DEMO_PRODUCTS: Product[] = [
     colors: ["أسود", "كحلي"],
     embroidery_or_print_type: "both",
     is_active: true,
-    is_featured: true,
+    is_featured: false,
     created_at: NOW,
     ...cat("uniforms"),
   },
@@ -182,7 +165,7 @@ export const DEMO_PRODUCTS: Product[] = [
     colors: ["كحلي", "أسود"],
     embroidery_or_print_type: "embroidery",
     is_active: true,
-    is_featured: true,
+    is_featured: false,
     created_at: NOW,
     ...cat("uniforms"),
   },
@@ -200,7 +183,7 @@ export const DEMO_PRODUCTS: Product[] = [
     colors: ["أسود", "أبيض", "كحلي", "أحمر"],
     embroidery_or_print_type: "both",
     is_active: true,
-    is_featured: true,
+    is_featured: false,
     created_at: NOW,
     ...cat("polo"),
   },
@@ -218,7 +201,7 @@ export const DEMO_PRODUCTS: Product[] = [
     colors: ["أسود", "كحلي", "أبيض"],
     embroidery_or_print_type: "embroidery",
     is_active: true,
-    is_featured: true,
+    is_featured: false,
     created_at: NOW,
     ...cat("caps"),
   },
@@ -236,89 +219,15 @@ export const DEMO_PRODUCTS: Product[] = [
     colors: ["أسود", "ذهبي", "كحلي"],
     embroidery_or_print_type: "embroidery",
     is_active: true,
-    is_featured: true,
+    is_featured: false,
     created_at: NOW,
     ...cat("caps"),
   },
 ];
 
-export const DEMO_GALLERY: GalleryImage[] = [
-  {
-    id: "gal-1",
-    image_url: img("photo-1503342217505-b0a15ec3261c"),
-    caption: "طباعة تيشيرتات لفعالية شبابية",
-    created_at: NOW,
-  },
-  {
-    id: "gal-2",
-    image_url: img("photo-1452860606245-08befc0ff44b"),
-    caption: "تطريز يدوي وتفاصيل دقيقة على القماش",
-    created_at: NOW,
-  },
-  {
-    id: "gal-3",
-    image_url: img("photo-1556821840-3a63f95609a7"),
-    caption: "هودي أسود بتطريز شعار على الصدر",
-    created_at: NOW,
-  },
-  {
-    id: "gal-4",
-    image_url: img("photo-1618354691373-d851c5c3a990"),
-    caption: "بولو شركات بهوية موحّدة",
-    created_at: NOW,
-  },
-  {
-    id: "gal-5",
-    image_url: img("photo-1521369909029-2afed882baee"),
-    caption: "قبعات مطرّزة لفريق كامل",
-    created_at: NOW,
-  },
-  {
-    id: "gal-6",
-    image_url: img("photo-1489980557514-251d61e3eeb6"),
-    caption: "تشكيلة ألوان جاهزة للطباعة والتطريز",
-    created_at: NOW,
-  },
-];
+export const DEMO_GALLERY: GalleryImage[] = STOREFRONT_GALLERY;
 
-function heroImg(id: string): string {
-  return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1920&q=80`;
-}
-
-export const DEMO_HERO_SLIDES: HeroSlide[] = [
-  {
-    id: "hero-1",
-    image_url: heroImg("photo-1503342217505-b0a15ec3261c"),
-    alt_text: "طباعة تيشيرتات",
-    sort_order: 0,
-    is_active: true,
-    created_at: NOW,
-  },
-  {
-    id: "hero-2",
-    image_url: heroImg("photo-1556821840-3a63f95609a7"),
-    alt_text: "هودي بتطريز فاخر",
-    sort_order: 1,
-    is_active: true,
-    created_at: NOW,
-  },
-  {
-    id: "hero-3",
-    image_url: heroImg("photo-1523381210434-271e8be1f52b"),
-    alt_text: "تشكيلة ملابس جاهزة للتخصيص",
-    sort_order: 2,
-    is_active: true,
-    created_at: NOW,
-  },
-  {
-    id: "hero-4",
-    image_url: heroImg("photo-1618354691373-d851c5c3a990"),
-    alt_text: "بولو شركات",
-    sort_order: 3,
-    is_active: true,
-    created_at: NOW,
-  },
-];
+export const DEMO_HERO_SLIDES: HeroSlide[] = STOREFRONT_HERO;
 
 export const DEMO_TESTIMONIALS: Testimonial[] = [
   {

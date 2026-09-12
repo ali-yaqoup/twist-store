@@ -112,25 +112,37 @@ export default function HeroBanner({
           onTouchEnd={onTouchEnd}
         />
       )}
-      {slides.map((slide, i) => (
-        <div
-          key={slide.id}
-          className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ease-in-out ${
-            i === index ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <Image
-            src={slide.image_url}
-            alt={slide.alt_text || settings.hero_title || settings.shop_name}
-            fill
-            priority={i === 0}
-            sizes="100vw"
-            className="object-cover object-center"
-          />
-        </div>
-      ))}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-night/80 via-night/25 to-black/30" />
-      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-3xl flex-col items-center justify-center px-4 py-16 text-center sm:min-h-[calc(100svh-4.75rem)] sm:px-6 sm:py-24">
+      <div className="relative aspect-[4/5] w-full md:aspect-[16/9] md:max-h-[90vh]">
+        {slides.map((slide, i) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+              i === index ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <Image
+              src={slide.image_url}
+              alt={slide.alt_text || settings.hero_title || settings.shop_name}
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              quality={95}
+              className="object-cover object-center md:hidden"
+            />
+            <Image
+              src={slide.wide_image_url || slide.image_url}
+              alt={slide.alt_text || settings.hero_title || settings.shop_name}
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              quality={95}
+              className="hidden object-cover object-center md:block"
+            />
+          </div>
+        ))}
+      </div>
+      <div className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-t from-night/65 via-night/15 to-black/20" />
+      <div className="absolute inset-0 z-10 mx-auto flex w-full max-w-3xl flex-col items-center justify-center px-4 py-16 text-center sm:px-6">
         {copy}
       </div>
       {count > 1 && (

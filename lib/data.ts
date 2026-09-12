@@ -5,12 +5,18 @@ import { CACHE_TAGS, STORE_REVALIDATE_SECONDS } from "@/lib/cache-tags";
 import { mergeSettings } from "@/lib/cms";
 import {
   DEMO_CATEGORIES,
-  DEMO_GALLERY,
-  DEMO_HERO_SLIDES,
   DEMO_PRODUCTS,
   DEMO_TESTIMONIALS,
-  filterDemoProducts,
 } from "@/lib/demo-catalog";
+import {
+  applyStorefrontCategories,
+  applyStorefrontProduct,
+  applyStorefrontProducts,
+  DEMO_QALANDIYA_ID,
+  QALANDIYA_ID,
+  storefrontGallery,
+  storefrontHeroSlides,
+} from "@/lib/storefront-photos";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createPublicClient } from "@/lib/supabase/public";
 import type {
@@ -108,14 +114,14 @@ const loadCategories = unstable_cache(
       if (error) throw error;
       return (data ?? []) as Category[];
     });
-    const categories = live !== null ? live : DEMO_CATEGORIES;
+    const categories = applyStorefrontCategories(live !== null ? live : DEMO_CATEGORIES);
     const productImages = await firstProductImageByCategoryId(categories);
     return categories.map((category) => ({
       ...category,
       image_url: categoryImageSrc(category, productImages.get(category.id) ?? null),
     }));
   },
-  ["categories-v1"],
+  ["categories-v4"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.categories, CACHE_TAGS.products] }
 );
 
@@ -124,60 +130,47 @@ const loadProducts = unstable_cache(
     const options = JSON.parse(key) as ProductQueryOptions;
     const live = await fromSupabase(async () => {
       const supabase = createPublicClient();
-      let query = supabase
+      const query = supabase
         .from("products")
         .select("*, categories(id, name, slug)")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
-      if (options.featured) query = query.eq("is_featured", true);
-      if (options.minPrice != null) query = query.gte("price", options.minPrice);
-      if (options.maxPrice != null) query = query.lte("price", options.maxPrice);
-
       const { data, error } = await query;
-      if (error) throw error;
-      let products = ((data ?? []) as Product[]).map(asProduct);
-      if (options.categorySlug) {
-        products = products.filter((p) => p.categories?.slug === options.categorySlug);
-      }
-      if (options.limit) products = products.slice(0, options.limit);
-      return products;
-    });
-
-    return live !== null ? live : filterDemoProducts(options);
-  },
-  ["products-list-v1"],
-  { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
-);
-
-const loadFeaturedProducts = unstable_cache(
-  async (limit: number): Promise<Product[]> => {
-    const featured = await fromSupabase(async () => {
-      const supabase = createPublicClient();
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, categories(id, name, slug)")
-        .eq("is_active", true)
-        .eq("is_featured", true)
-        .order("created_at", { ascending: false })
-        .limit(limit);
       if (error) throw error;
       return ((data ?? []) as Product[]).map(asProduct);
     });
 
-    if (featured && featured.length > 0) return featured;
-    if (featured !== null) {
-      return loadProducts(productsCacheKey({ limit }));
+    let products = applyStorefrontProducts(live !== null ? live : [...DEMO_PRODUCTS]);
+    if (options.featured) products = products.filter((p) => p.is_featured);
+    if (options.categorySlug) {
+      products = products.filter((p) => p.categories?.slug === options.categorySlug);
     }
-    const demoFeatured = filterDemoProducts({ featured: true, limit });
-    return demoFeatured.length > 0 ? demoFeatured : filterDemoProducts({ limit });
+    if (options.minPrice != null) {
+      products = products.filter((p) => p.price >= options.minPrice!);
+    }
+    if (options.maxPrice != null) {
+      products = products.filter((p) => p.price <= options.maxPrice!);
+    }
+    if (options.limit) products = products.slice(0, options.limit);
+    return products;
   },
-  ["featured-products-v1"],
+  ["products-list-v4"],
+  { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
+);
+
+const loadFeaturedProducts = unstable_cache(
+  async (limit: number): Promise<Product[]> =>
+    loadProducts(productsCacheKey({ featured: true, limit })),
+  ["featured-products-v4"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );
 
 const loadProductById = unstable_cache(
   async (id: string): Promise<Product | null> => {
+    if (id === QALANDIYA_ID || id === DEMO_QALANDIYA_ID) {
+      return applyStorefrontProduct(null, id);
+    }
     if (isSupabaseConfigured()) {
       try {
         const supabase = createPublicClient();
@@ -191,56 +184,28 @@ const loadProductById = unstable_cache(
           console.error("Supabase product lookup failed", error);
           return null;
         }
-        return data ? asProduct(data as Product) : null;
+        return applyStorefrontProduct(data ? asProduct(data as Product) : null, id);
       } catch (err) {
         console.error("Supabase product lookup failed", err);
-        return null;
+        return applyStorefrontProduct(null, id);
       }
     }
-    const demo = DEMO_PRODUCTS.find((p) => p.id === id);
-    return demo ? asProduct(demo) : null;
+    const demo = DEMO_PRODUCTS.find((p) => p.id === id) ?? null;
+    return applyStorefrontProduct(demo ? asProduct(demo) : null, id);
   },
-  ["product-by-id-v1"],
+  ["product-by-id-v4"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );
 
 const loadGalleryImages = unstable_cache(
-  async (limit: number | null): Promise<GalleryImage[]> => {
-    const live = await fromSupabase(async () => {
-      const supabase = createPublicClient();
-      let query = supabase
-        .from("gallery_images")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (limit) query = query.limit(limit);
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data ?? []) as GalleryImage[];
-    });
-
-    if (live !== null) return live;
-    return limit ? DEMO_GALLERY.slice(0, limit) : DEMO_GALLERY;
-  },
-  ["gallery-v1"],
+  async (limit: number | null): Promise<GalleryImage[]> => storefrontGallery(limit),
+  ["gallery-v4"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.gallery] }
 );
 
 const loadHeroSlides = unstable_cache(
-  async (): Promise<HeroSlide[]> => {
-    const live = await fromSupabase(async () => {
-      const supabase = createPublicClient();
-      const { data, error } = await supabase
-        .from("hero_slides")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as HeroSlide[];
-    });
-    return live !== null ? live : DEMO_HERO_SLIDES;
-  },
-  ["hero-slides-v1"],
+  async (): Promise<HeroSlide[]> => storefrontHeroSlides(),
+  ["hero-slides-v4"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.hero] }
 );
 

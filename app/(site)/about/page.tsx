@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { getSiteSettings } from "@/lib/data";
+import { PHOTOS } from "@/lib/storefront-photos";
 
 export const revalidate = 120;
 export const metadata: Metadata = { title: "من نحن" };
@@ -20,6 +22,28 @@ export default async function AboutPage() {
       <div className="mx-auto mt-10 max-w-3xl space-y-6 text-center leading-9 text-stone-300">
         {settings.about_paragraphs.map((p) => (
           <p key={p}>{p}</p>
+        ))}
+      </div>
+
+      <div className="mt-12 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        {[
+          { src: PHOTOS.hijraCard, alt: "تطريز هجرة" },
+          { src: PHOTOS.watananCard, alt: "تطريز WATANAN" },
+          { src: "/photos/gal-hijra-back.jpg", alt: "طباعة ظهر هجرة" },
+        ].map((photo) => (
+          <figure
+            key={photo.src}
+            className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-brand/16 bg-night-card"
+          >
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              fill
+              sizes="(max-width: 640px) 100vw, 33vw"
+              quality={95}
+              className="object-cover object-center"
+            />
+          </figure>
         ))}
       </div>
 

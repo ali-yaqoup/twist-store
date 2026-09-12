@@ -81,7 +81,8 @@ export default function ProductDetails({ product }: { product: Product }) {
                   alt={`${product.name} ${i + 1}`}
                   fill
                   sizes="80px"
-                  className="object-cover"
+                  quality={95}
+                  className="object-cover object-center"
                 />
               </button>
             ))}

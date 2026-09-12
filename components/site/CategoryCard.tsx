@@ -16,7 +16,8 @@ export default function CategoryCard({ category }: { category: Category }) {
         alt={category.name}
         fill
         sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
-        className="object-cover object-center brightness-[0.78] contrast-[1.1] saturate-[0.88] transition-[transform,filter] duration-700 ease-out group-hover:scale-105 group-hover:brightness-[0.88] group-hover:saturate-100"
+        quality={95}
+        className="object-cover object-center brightness-[0.9] transition-[transform,filter] duration-700 ease-out group-hover:scale-105 group-hover:brightness-100"
       />
       <span
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/15"

@@ -61,7 +61,7 @@ export default function ProductImageZoom({
     <div className="relative">
       <div
         ref={frameRef}
-        className={`image-frame relative aspect-[4/5] sm:aspect-square ${enabled ? "cursor-zoom-in" : ""}`}
+        className={`image-frame relative aspect-[3/4] ${enabled ? "cursor-zoom-in" : ""}`}
         onMouseEnter={() => enabledRef.current && setHovering(true)}
         onMouseLeave={() => setHovering(false)}
         onMouseMove={moveLens}
@@ -71,7 +71,8 @@ export default function ProductImageZoom({
           alt={alt}
           fill
           sizes="(max-width: 1024px) 100vw, 50vw"
-          className="object-cover"
+          className="object-cover object-center"
+          quality={95}
           priority
         />
         {enabled && (

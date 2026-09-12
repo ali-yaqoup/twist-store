@@ -39,7 +39,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="group card-hover-lift card-luxe min-w-0 overflow-hidden hover:border-brand/45 hover:shadow-[0_20px_48px_rgba(0,0,0,0.5),0_0_28px_rgba(245,196,0,0.1)]">
-      <div className="image-frame relative aspect-[4/5] rounded-none border-0 shadow-none">
+      <div className="image-frame relative aspect-[3/4] rounded-none border-0 bg-night-soft shadow-none">
         <Link
           href={`/products/${product.id}`}
           className="absolute inset-0 z-0"
@@ -50,9 +50,9 @@ export default function ProductCard({ product }: { product: Product }) {
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-            className="pointer-events-none object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            quality={95}
+            className="pointer-events-none object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
           />
-          <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent opacity-70" />
         </Link>
         <div className="absolute top-3 start-3 z-[2]">
           <WishlistButton product={product} />

@@ -41,6 +41,7 @@ export interface AboutValue {
 export interface HeroSlide {
   id: string;
   image_url: string;
+  wide_image_url?: string;
   alt_text: string | null;
   sort_order: number;
   is_active: boolean;
@@ -184,4 +185,4 @@ export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
 };
 
 export const DEFAULT_SIZES = ["S", "M", "L", "XL", "XXL"];
-export const DEFAULT_COLORS = ["أسود", "أبيض", "كحلي", "رمادي", "أحمر", "ذهبي"];
+export const DEFAULT_COLORS = ["أسود", "أبيض", "كحلي", "رمادي", "أحمر", "ذهبي", "بيج", "خمري", "أخضر"];

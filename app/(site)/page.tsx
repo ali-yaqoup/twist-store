@@ -4,7 +4,6 @@ import HeroBanner from "@/components/site/HeroBanner";
 import ProductCard from "@/components/site/ProductCard";
 import CategoryCard from "@/components/site/CategoryCard";
 import SectionTitle from "@/components/site/SectionTitle";
-import TwistLogo from "@/components/site/TwistLogo";
 import {
   getCategories,
   getFeaturedProducts,
@@ -79,14 +78,15 @@ export default async function HomePage() {
               {gallery.map((img) => (
                 <figure
                   key={img.id}
-                  className="group relative aspect-square overflow-hidden rounded-xl border border-brand/14"
+                  className="group relative aspect-[3/4] overflow-hidden rounded-xl border border-brand/14 bg-night-card"
                 >
                   <Image
                     src={img.image_url}
                     alt={img.caption ?? settings.gallery_title}
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    quality={95}
+                    className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
                   />
                   {img.caption && (
                     <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-4 pt-10 text-sm font-medium text-stone-100">
@@ -124,21 +124,15 @@ export default async function HomePage() {
               {settings.home_about_cta}
             </Link>
           </div>
-          <div className="flex items-center justify-center">
-            {settings.logo_url ? (
-              <div className="relative aspect-square w-full max-w-xs overflow-hidden rounded-full border border-brand/35">
-                <Image
-                  src={settings.logo_url}
-                  alt={settings.shop_name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              <div className="flex aspect-square w-full max-w-xs items-center justify-center rounded-full border border-brand/30 bg-[radial-gradient(circle,rgba(245,196,0,0.1),transparent_70%)]">
-                <TwistLogo name={settings.shop_name} size="lg" />
-              </div>
-            )}
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-brand/20 bg-night-soft">
+            <Image
+              src="/photos/hijra-front.jpg"
+              alt="من تنفيذ TWIST — تطريز هجرة"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              quality={95}
+              className="object-cover object-center"
+            />
           </div>
         </div>
       </section>
