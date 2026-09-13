@@ -445,6 +445,50 @@ export async function deleteHeroSlide(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+export async function updateHeroSlideFocus(
+  id: string,
+  focus: {
+    focus_x: number;
+    focus_y: number;
+    wide_focus_x: number;
+    wide_focus_y: number;
+  }
+): Promise<ActionResult> {
+  const blocked = await requireAdmin();
+  if (blocked) return blocked;
+  if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
+
+  const clamp = (n: number) => Math.min(100, Math.max(0, Number(n)));
+  const payload = {
+    focus_x: clamp(focus.focus_x),
+    focus_y: clamp(focus.focus_y),
+    wide_focus_x: clamp(focus.wide_focus_x),
+    wide_focus_y: clamp(focus.wide_focus_y),
+  };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("hero_slides")
+    .update(payload)
+    .eq("id", id)
+    .select("id");
+
+  if (error || !data?.length) {
+    return {
+      ok: false,
+      error:
+        error?.message?.includes("focus_x") || error?.code === "PGRST204"
+          ? "تعذر الحفظ — شغّل ملف supabase/migrations/0011_hero_focus.sql على Supabase"
+          : "تعذر حفظ قص البانر",
+    };
+  }
+
+  revalidatePath("/admin/homepage");
+  updateTag(CACHE_TAGS.hero);
+  revalidatePath("/");
+  return { ok: true };
+}
+
 export async function moveHeroSlide(
   id: string,
   direction: "up" | "down"

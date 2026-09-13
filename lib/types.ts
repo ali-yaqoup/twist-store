@@ -41,11 +41,17 @@ export interface AboutValue {
 export interface HeroSlide {
   id: string;
   image_url: string;
-  wide_image_url?: string;
+  wide_image_url?: string | null;
   alt_text: string | null;
   sort_order: number;
   is_active: boolean;
   created_at: string;
+  /** Focal point for mobile/tall crop (0–100). */
+  focus_x?: number | null;
+  focus_y?: number | null;
+  /** Focal point for desktop/wide crop (0–100). */
+  wide_focus_x?: number | null;
+  wide_focus_y?: number | null;
 }
 
 export interface SiteSettings {

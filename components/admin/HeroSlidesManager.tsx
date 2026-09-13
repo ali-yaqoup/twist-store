@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { addHeroSlide, deleteHeroSlide, moveHeroSlide } from "@/app/admin/actions";
 import DeleteButton from "@/components/admin/DeleteButton";
+import HeroFocusEditor from "@/components/admin/HeroFocusEditor";
+import { heroObjectPosition } from "@/lib/hero-focus";
 import { uploadPublicImage } from "@/lib/upload";
 import type { HeroSlide } from "@/lib/types";
 
@@ -11,6 +13,7 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [editing, setEditing] = useState<HeroSlide | null>(null);
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
@@ -38,8 +41,7 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
         <span className="text-xs text-stone-500">{slides.length} صورة</span>
       </div>
       <p className="text-sm leading-7 text-stone-400">
-        هذه الصور تظهر في أعلى الصفحة الرئيسية. ارفع، رتّب، أو احذف — النص فوق الصورة
-        يُعدَّل من النموذج أسفل.
+        ارفع، رتّب، احذف، أو اضغط «قص» لتحريك الجزء الظاهر من الصورة على الجوال والشاشة الكبيرة.
       </p>
 
       {slides[0] && (
@@ -49,6 +51,7 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
             src={slides[0].wide_image_url || slides[0].image_url}
             alt={slides[0].alt_text ?? "معاينة البانر"}
             className="h-full w-full object-cover"
+            style={{ objectPosition: heroObjectPosition(slides[0], true) }}
           />
           <span className="absolute bottom-2 right-2 rounded-full bg-black/70 px-3 py-1 text-[11px] font-bold text-brand">
             المعاينة — الصورة الأولى
@@ -91,12 +94,13 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
                 src={slide.wide_image_url || slide.image_url}
                 alt={slide.alt_text ?? ""}
                 className="h-full w-full object-cover"
+                style={{ objectPosition: heroObjectPosition(slide, true) }}
               />
               <span className="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[11px] font-bold text-brand">
                 {i + 1}
               </span>
             </div>
-            <div className="flex items-center justify-between gap-2 p-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 p-2">
               <div className="flex gap-1">
                 <button
                   type="button"
@@ -123,10 +127,19 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
                   يسار
                 </button>
               </div>
-              <DeleteButton
-                confirmText="حذف هذه الصورة من البانر؟"
-                onDelete={() => deleteHeroSlide(slide.id)}
-              />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setEditing(slide)}
+                  className="rounded-lg border border-brand/40 px-2 py-1 text-xs font-bold text-brand hover:bg-brand/10"
+                >
+                  قص
+                </button>
+                <DeleteButton
+                  confirmText="حذف هذه الصورة من البانر؟"
+                  onDelete={() => deleteHeroSlide(slide.id)}
+                />
+              </div>
             </div>
           </li>
         ))}
@@ -136,6 +149,13 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
           </li>
         )}
       </ul>
+
+      {editing && (
+        <HeroFocusEditor
+          slide={editing}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </section>
   );
 }

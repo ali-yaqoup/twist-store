@@ -223,7 +223,7 @@ const loadHeroSlides = unstable_cache(
     }
     return storefrontHeroSlides();
   },
-  ["hero-slides-v5"],
+  ["hero-slides-v6"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.hero] }
 );
 

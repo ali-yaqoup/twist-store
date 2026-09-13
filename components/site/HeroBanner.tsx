@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { heroObjectPosition } from "@/lib/hero-focus";
 import type { HeroSlide, SiteSettings } from "@/lib/types";
 
 export default function HeroBanner({
@@ -127,7 +128,8 @@ export default function HeroBanner({
               priority={i === 0}
               sizes="100vw"
               quality={95}
-              className="object-cover object-center md:hidden"
+              className="object-cover md:hidden"
+              style={{ objectPosition: heroObjectPosition(slide, false) }}
             />
             <Image
               src={slide.wide_image_url || slide.image_url}
@@ -136,7 +138,8 @@ export default function HeroBanner({
               priority={i === 0}
               sizes="100vw"
               quality={95}
-              className="hidden object-cover object-center md:block"
+              className="hidden object-cover md:block"
+              style={{ objectPosition: heroObjectPosition(slide, true) }}
             />
           </div>
         ))}
