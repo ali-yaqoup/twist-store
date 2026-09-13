@@ -41,11 +41,11 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
         <span className="text-xs text-stone-500">{slides.length} صورة</span>
       </div>
       <p className="text-sm leading-7 text-stone-400">
-        ارفع، رتّب، احذف، أو اضغط «قص» لتحريك الجزء الظاهر من الصورة على الجوال والشاشة الكبيرة.
+        ارفع، رتّب، احذف، أو اضغط «قص» على الصورة لتحريك الجزء الظاهر (جوال / كمبيوتر).
       </p>
 
       {slides[0] && (
-        <div className="relative mt-4 aspect-[21/9] overflow-hidden rounded-xl border border-white/10">
+        <div className="relative mt-4 aspect-[21/9] overflow-hidden rounded-xl border border-white/10 bg-night">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={slides[0].wide_image_url || slides[0].image_url}
@@ -88,18 +88,26 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
             key={slide.id}
             className="overflow-hidden rounded-xl border border-white/10 bg-night"
           >
-            <div className="relative aspect-video">
+            <button
+              type="button"
+              onClick={() => setEditing(slide)}
+              className="group relative block aspect-video w-full overflow-hidden text-start"
+              title="قص وتحريك الصورة"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={slide.wide_image_url || slide.image_url}
                 alt={slide.alt_text ?? ""}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition duration-300 group-hover:brightness-90"
                 style={heroMediaStyle(slide, true)}
               />
               <span className="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[11px] font-bold text-brand">
                 {i + 1}
               </span>
-            </div>
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2 text-center text-xs font-bold text-brand opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+                اضغط للقص والتحريك
+              </span>
+            </button>
             <div className="flex flex-wrap items-center justify-between gap-2 p-2">
               <div className="flex gap-1">
                 <button
@@ -131,7 +139,7 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
                 <button
                   type="button"
                   onClick={() => setEditing(slide)}
-                  className="rounded-lg border border-brand/40 px-2 py-1 text-xs font-bold text-brand hover:bg-brand/10"
+                  className="rounded-lg border border-brand/50 bg-brand/10 px-2.5 py-1 text-xs font-bold text-brand hover:bg-brand/20"
                 >
                   قص
                 </button>

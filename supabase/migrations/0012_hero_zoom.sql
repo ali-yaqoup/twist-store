@@ -4,5 +4,5 @@
 -- ============================================================
 
 alter table public.hero_slides
-  add column if not exists zoom double precision not null default 1.35,
-  add column if not exists wide_zoom double precision not null default 1.35;
+  add column if not exists zoom double precision not null default 1,
+  add column if not exists wide_zoom double precision not null default 1;

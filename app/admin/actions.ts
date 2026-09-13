@@ -461,7 +461,7 @@ export async function updateHeroSlideFocus(
   if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
 
   const clampFocus = (n: number) => Math.min(100, Math.max(0, Number(n)));
-  const clampZoom = (n: number) => Math.min(2.5, Math.max(1.15, Number(n)));
+  const clampZoom = (n: number) => Math.min(2.5, Math.max(1, Number(n)));
   const payload = {
     focus_x: clampFocus(focus.focus_x),
     focus_y: clampFocus(focus.focus_y),

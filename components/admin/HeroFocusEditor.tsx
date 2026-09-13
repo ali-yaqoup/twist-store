@@ -6,7 +6,7 @@ import { updateHeroSlideFocus } from "@/app/admin/actions";
 import {
   clampFocus,
   clampZoom,
-  DEFAULT_HERO_ZOOM,
+  EDITOR_START_ZOOM,
   heroMediaStyle,
   MAX_HERO_ZOOM,
   MIN_HERO_ZOOM,
@@ -27,8 +27,12 @@ export default function HeroFocusEditor({
   const [focusY, setFocusY] = useState(clampFocus(slide.focus_y ?? 50));
   const [wideFocusX, setWideFocusX] = useState(clampFocus(slide.wide_focus_x ?? 50));
   const [wideFocusY, setWideFocusY] = useState(clampFocus(slide.wide_focus_y ?? 50));
-  const [zoom, setZoom] = useState(clampZoom(slide.zoom ?? DEFAULT_HERO_ZOOM));
-  const [wideZoom, setWideZoom] = useState(clampZoom(slide.wide_zoom ?? DEFAULT_HERO_ZOOM));
+  const [zoom, setZoom] = useState(
+    clampZoom(slide.zoom && slide.zoom > 1 ? slide.zoom : EDITOR_START_ZOOM)
+  );
+  const [wideZoom, setWideZoom] = useState(
+    clampZoom(slide.wide_zoom && slide.wide_zoom > 1 ? slide.wide_zoom : EDITOR_START_ZOOM)
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const drag = useRef<{

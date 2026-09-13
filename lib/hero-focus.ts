@@ -1,9 +1,12 @@
 import type { CSSProperties } from "react";
 import type { HeroSlide } from "@/lib/types";
 
-export const DEFAULT_HERO_ZOOM = 1.35;
-export const MIN_HERO_ZOOM = 1.15;
+/** 1 = no zoom (full cover). Admin raises zoom only when cropping/panning. */
+export const DEFAULT_HERO_ZOOM = 1;
+export const MIN_HERO_ZOOM = 1;
 export const MAX_HERO_ZOOM = 2.5;
+/** Comfortable starting zoom inside the crop editor so panning has room. */
+export const EDITOR_START_ZOOM = 1.25;
 
 export function clampFocus(value: number): number {
   if (!Number.isFinite(value)) return 50;
@@ -30,10 +33,15 @@ export function heroFocus(slide: HeroSlide, wide = false): { x: number; y: numbe
   };
 }
 
-/** Cover + zoom + pan so the image can move in every direction. */
+/** Cover + optional zoom/pan. At zoom=1 this is a normal object-cover. */
 export function heroMediaStyle(slide: HeroSlide, wide = false): CSSProperties {
   const { x, y, zoom } = heroFocus(slide, wide);
-  // Map focus 0..100 → translate so dragging left shows more of the right side.
+  if (zoom <= 1.001) {
+    return {
+      objectFit: "cover",
+      objectPosition: `${x}% ${y}%`,
+    };
+  }
   const tx = ((50 - x) / 50) * ((zoom - 1) / zoom) * 50;
   const ty = ((50 - y) / 50) * ((zoom - 1) / zoom) * 50;
   return {
