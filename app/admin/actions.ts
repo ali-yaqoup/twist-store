@@ -13,7 +13,7 @@ import {
   sanitizeText,
 } from "@/lib/security";
 import { createClient } from "@/lib/supabase/server";
-import { STOREFRONT_SYNC_TARGETS } from "@/lib/storefront-photos";
+import { runStorefrontCatalogSync as syncStorefrontCatalogRows } from "@/lib/sync-storefront-catalog";
 import { storagePathFromPublicUrl } from "@/lib/upload";
 import type { AboutValue, OrderStatus, ServiceType } from "@/lib/types";
 
@@ -274,51 +274,8 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
 
 /** Write storefront catalog overlays into Supabase so they appear in admin. */
 export async function syncStorefrontCatalog(): Promise<ActionResult> {
-  const blocked = await requireAdmin();
-  if (blocked) return blocked;
-
-  const supabase = await createClient();
-
-  const [{ data: products, error: productsError }, { data: categories, error: categoriesError }] =
-    await Promise.all([
-      supabase.from("products").select("id, name, category_id"),
-      supabase.from("categories").select("id, slug"),
-    ]);
-
-  if (productsError || categoriesError) {
-    return { ok: false, error: "تعذر مزامنة المنتجات مع قاعدة البيانات" };
-  }
-
-  const tshirtsId = categories?.find((c) => c.slug === "tshirts")?.id ?? null;
-  const rows = products ?? [];
-
-  for (const target of STOREFRONT_SYNC_TARGETS) {
-    const existing = rows.find((p) => target.matchNames.includes(p.name));
-    const payload = {
-      name: target.patch.name,
-      description: target.patch.description,
-      price: target.patch.price,
-      images: target.patch.images,
-      sizes: target.patch.sizes,
-      colors: target.patch.colors,
-      embroidery_or_print_type: target.patch.embroidery_or_print_type,
-      is_featured: target.patch.is_featured,
-      is_active: true,
-      category_id: existing?.category_id ?? tshirtsId,
-    };
-
-    if (existing) {
-      // Only push overlay once (legacy seed name → storefront name). Don't clobber later admin edits.
-      if (existing.name === target.patch.name) continue;
-      const { error } = await supabase.from("products").update(payload).eq("id", existing.id);
-      if (error) return { ok: false, error: `تعذر تحديث «${target.patch.name}»` };
-    } else if (target.patch.name === "تيشيرت قلنديا") {
-      if (!tshirtsId) return { ok: false, error: "فئة التيشيرتات غير موجودة" };
-      const { error } = await supabase.from("products").insert(payload);
-      if (error) return { ok: false, error: "تعذر إضافة تيشيرت قلنديا" };
-    }
-  }
-
+  const result = await syncStorefrontCatalogRows();
+  if (!result.ok) return result;
   revalidatePath("/admin/products");
   revalidateProducts();
   return { ok: true };

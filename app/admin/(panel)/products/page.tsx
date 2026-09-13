@@ -1,16 +1,19 @@
 import Link from "next/link";
-import { syncStorefrontCatalog } from "@/app/admin/actions";
 import AdminProductsList from "@/components/admin/AdminProductsList";
 import { AdminPageHeader } from "@/components/admin/ui";
+import { runStorefrontCatalogSync } from "@/lib/sync-storefront-catalog";
 import { createClient } from "@/lib/supabase/server";
 import type { Product } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage() {
-  // Persist storefront catalog overlays (هجرة / WATANAN / بلاتنم / قلنديا) into Supabase
-  // so they show with real names in admin and remain editable/deletable.
-  await syncStorefrontCatalog();
+  // Persist storefront overlays once (safe during RSC — no revalidatePath).
+  try {
+    await runStorefrontCatalogSync();
+  } catch (err) {
+    console.error("storefront catalog sync threw", err);
+  }
 
   const supabase = await createClient();
   const { data } = await supabase
