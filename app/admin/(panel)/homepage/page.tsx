@@ -3,6 +3,7 @@ import HeroSlidesManager from "@/components/admin/HeroSlidesManager";
 import HomepageForm from "@/components/admin/HomepageForm";
 import { AdminPageHeader } from "@/components/admin/ui";
 import { getSiteSettings } from "@/lib/data";
+import { runStorefrontHeroSync } from "@/lib/sync-storefront-hero";
 import { createClient } from "@/lib/supabase/server";
 import type { HeroSlide, Product } from "@/lib/types";
 
@@ -10,6 +11,12 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "الصفحة الرئيسية" };
 
 export default async function AdminHomepagePage() {
+  try {
+    await runStorefrontHeroSync();
+  } catch (err) {
+    console.error("storefront hero sync threw", err);
+  }
+
   const supabase = await createClient();
   const [productsRes, slidesRes, settings] = await Promise.all([
     supabase.from("products").select("*").order("created_at", { ascending: false }),

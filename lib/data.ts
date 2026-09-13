@@ -204,8 +204,26 @@ const loadGalleryImages = unstable_cache(
 );
 
 const loadHeroSlides = unstable_cache(
-  async (): Promise<HeroSlide[]> => storefrontHeroSlides(),
-  ["hero-slides-v4"],
+  async (): Promise<HeroSlide[]> => {
+    const live = await fromSupabase(async () => {
+      const supabase = createPublicClient();
+      const { data, error } = await supabase
+        .from("hero_slides")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as HeroSlide[];
+    });
+
+    if (live !== null) {
+      // Prefer DB (admin-managed). Fall back to local storefront set only if DB empty.
+      return live.length > 0 ? live : storefrontHeroSlides();
+    }
+    return storefrontHeroSlides();
+  },
+  ["hero-slides-v5"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.hero] }
 );
 

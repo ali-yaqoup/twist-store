@@ -46,7 +46,7 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
         <div className="relative mt-4 aspect-[21/9] overflow-hidden rounded-xl border border-white/10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={slides[0].image_url}
+            src={slides[0].wide_image_url || slides[0].image_url}
             alt={slides[0].alt_text ?? "معاينة البانر"}
             className="h-full w-full object-cover"
           />
@@ -88,7 +88,7 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
             <div className="relative aspect-video">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={slide.image_url}
+                src={slide.wide_image_url || slide.image_url}
                 alt={slide.alt_text ?? ""}
                 className="h-full w-full object-cover"
               />

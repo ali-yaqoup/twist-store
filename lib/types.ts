@@ -87,6 +87,8 @@ export interface SiteSettings {
   about_cta_text: string;
   contact_title: string;
   contact_intro: string;
+  /** One-time flag: storefront banner photos were seeded into hero_slides */
+  storefront_hero_synced?: boolean;
   contact_whatsapp_label: string;
   contact_success_title: string;
   contact_success_text: string;
