@@ -11,22 +11,21 @@ export async function runStorefrontCatalogSync(): Promise<SyncResult> {
 
   const supabase = await createClient();
 
-  const [{ data: products, error: productsError }, { data: categories, error: categoriesError }] =
-    await Promise.all([
+  const [{ data: products, error: productsError }] = await Promise.all([
       supabase.from("products").select("id, name, category_id"),
-      supabase.from("categories").select("id, slug"),
     ]);
 
-  if (productsError || categoriesError) {
-    console.error("storefront catalog sync failed", productsError ?? categoriesError);
+  if (productsError) {
+    console.error("storefront catalog sync failed", productsError);
     return { ok: false, error: "تعذر مزامنة المنتجات مع قاعدة البيانات" };
   }
 
-  const tshirtsId = categories?.find((c) => c.slug === "tshirts")?.id ?? null;
   const rows = products ?? [];
 
   for (const target of STOREFRONT_SYNC_TARGETS) {
     const existing = rows.find((p) => target.matchNames.includes(p.name));
+    if (!existing || existing.name === target.patch.name) continue;
+
     const payload = {
       name: target.patch.name,
       description: target.patch.description,
@@ -37,25 +36,15 @@ export async function runStorefrontCatalogSync(): Promise<SyncResult> {
       embroidery_or_print_type: target.patch.embroidery_or_print_type,
       is_featured: target.patch.is_featured,
       is_active: true,
-      category_id: existing?.category_id ?? tshirtsId,
+      category_id: existing.category_id,
     };
 
-    if (existing) {
-      // Only push overlay once (legacy seed name → storefront name).
-      if (existing.name === target.patch.name) continue;
-      const { error } = await supabase.from("products").update(payload).eq("id", existing.id);
-      if (error) {
-        console.error("storefront catalog update failed", target.patch.name, error);
-        return { ok: false, error: `تعذر تحديث «${target.patch.name}»` };
-      }
-    } else if (target.patch.name === "تيشيرت قلنديا") {
-      if (!tshirtsId) return { ok: false, error: "فئة التيشيرتات غير موجودة" };
-      const { error } = await supabase.from("products").insert(payload);
-      if (error) {
-        console.error("storefront catalog insert failed", error);
-        return { ok: false, error: "تعذر إضافة تيشيرت قلنديا" };
-      }
+    const { error } = await supabase.from("products").update(payload).eq("id", existing.id);
+    if (error) {
+      console.error("storefront catalog update failed", target.patch.name, error);
+      return { ok: false, error: `تعذر تحديث «${target.patch.name}»` };
     }
+    // Never auto-insert deleted products (e.g. قلنديا) back into the admin catalog.
   }
 
   return { ok: true };

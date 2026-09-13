@@ -148,8 +148,15 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   if (blocked) return blocked;
   if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
-  const { error } = await supabase.from("categories").delete().eq("id", id);
-  if (error) return { ok: false, error: "تعذر حذف الفئة" };
+  const { data, error } = await supabase.from("categories").delete().eq("id", id).select("id");
+  if (error || !data?.length) {
+    return {
+      ok: false,
+      error: error
+        ? "تعذر حذف الفئة (قد تكون مرتبطة بمنتجات)."
+        : "لم تُحذف أي فئة (صلاحيات أو معرّف غير موجود).",
+    };
+  }
   revalidatePath("/admin/categories");
   revalidateStore();
   return { ok: true };
@@ -229,47 +236,52 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
   if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
 
-  // Preferred path: security-definer RPC detaches order_items then deletes.
-  const { error: rpcError } = await supabase.rpc("admin_delete_product", { p_id: id });
-  if (!rpcError) {
+  const finish = async () => {
     revalidatePath("/admin/products");
     revalidateProducts();
     revalidatePath(`/products/${id}`);
+  };
+
+  // Preferred: security-definer RPC (needs migrations 0008 + 0009 on Supabase).
+  const { error: rpcError } = await supabase.rpc("admin_delete_product", { p_id: id });
+  if (!rpcError) {
+    await finish();
     return { ok: true };
   }
 
-  // Fallback when migration 0008 is not applied yet.
-  await supabase.from("order_items").update({ product_id: null }).eq("product_id", id);
+  // Fallback: detach order lines then hard-delete.
+  const { error: detachError } = await supabase
+    .from("order_items")
+    .update({ product_id: null })
+    .eq("product_id", id);
+  if (detachError) {
+    console.error("detach order_items failed", detachError);
+  }
+
   const { data: deleted, error } = await supabase
     .from("products")
     .delete()
     .eq("id", id)
     .select("id");
+
   if (!error && deleted?.length) {
-    revalidatePath("/admin/products");
-    revalidateProducts();
-    revalidatePath(`/products/${id}`);
+    await finish();
     return { ok: true };
   }
 
-  // Last resort: hide from storefront if hard delete is still blocked by FK/RLS.
-  const { data: softDeleted, error: softError } = await supabase
-    .from("products")
-    .update({ is_active: false, is_featured: false })
-    .eq("id", id)
-    .select("id");
-  if (softError || !softDeleted?.length) {
-    return {
-      ok: false,
-      error:
-        "تعذر حذف المنتج (غالباً مرتبط بطلبات أو صلاحيات). شغّل ملف supabase/migrations/0008_product_delete.sql على Supabase ثم أعد المحاولة.",
-    };
-  }
+  console.error("deleteProduct failed", { id, rpcError, detachError, error });
 
-  revalidatePath("/admin/products");
-  revalidateProducts();
-  revalidatePath(`/products/${id}`);
-  return { ok: true };
+  const hint =
+    rpcError?.message?.includes("invalid product") ||
+    detachError?.message?.includes("invalid product") ||
+    error?.message?.includes("invalid product")
+      ? "شغّل ملف supabase/migrations/0009_fix_product_delete_trigger.sql على Supabase ثم أعد المحاولة."
+      : "تأكد أنك أدمن وأن ملفات 0008 و 0009 شغّالة على Supabase.";
+
+  return {
+    ok: false,
+    error: `تعذر حذف المنتج. ${hint}`,
+  };
 }
 
 /** Write storefront catalog overlays into Supabase so they appear in admin. */

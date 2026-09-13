@@ -94,6 +94,11 @@ begin
     raise exception 'invalid quantity';
   end if;
 
+  -- Allow detaching products from order lines (ON DELETE SET NULL / admin delete).
+  if new.product_id is null then
+    return new;
+  end if;
+
   select price into p
   from public.products
   where id = new.product_id and is_active = true;
