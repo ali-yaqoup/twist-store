@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductForm from "@/components/admin/ProductForm";
 import { AdminPageHeader } from "@/components/admin/ui";
+import { applyStorefrontProduct } from "@/lib/storefront-photos";
 import { createClient } from "@/lib/supabase/server";
 import type { Category, Product } from "@/lib/types";
 
@@ -24,15 +25,17 @@ export default async function EditProductPage({
 
   if (!product) notFound();
 
+  const patched = applyStorefrontProduct(product as Product, id) as Product;
+
   return (
     <div>
       <Link href="/admin/products" className="text-sm font-bold text-stone-400 hover:text-brand">
         ← كل المنتجات
       </Link>
       <div className="mt-4">
-        <AdminPageHeader title="تعديل المنتج" description={(product as Product).name} />
+        <AdminPageHeader title="تعديل المنتج" description={patched.name} />
       </div>
-      <ProductForm product={product as Product} categories={(categories ?? []) as Category[]} />
+      <ProductForm product={patched} categories={(categories ?? []) as Category[]} />
     </div>
   );
 }

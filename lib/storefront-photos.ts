@@ -101,6 +101,27 @@ const PATCH_BY_NAME: Record<string, ProductPatch> = {
   "تيشيرت قلنديا": QALANDIYA_PATCH,
 };
 
+/** Seed/canonical names that should be written into the admin DB. */
+export const STOREFRONT_SYNC_TARGETS: { matchNames: string[]; patch: ProductPatch }[] = [
+  {
+    matchNames: ["تيشيرت قطن كلاسيك", "تيشيرت هجرة"],
+    patch: HIJRA_PATCH,
+  },
+  {
+    matchNames: ["تيشيرت أسود أوفرسايز", "تيشيرت WATANAN"],
+    patch: WATANAN_PATCH,
+  },
+  {
+    matchNames: ["تيشيرت طباعة فنية", "تيشيرت براتنهم", "تيشيرت بلاتنم"],
+    patch: BLIGHTNM_PATCH,
+  },
+  {
+    matchNames: ["تيشيرت قلنديا"],
+    patch: QALANDIYA_PATCH,
+  },
+];
+
+
 const FEATURED_ORDER = [
   HIJRA_PATCH.name,
   WATANAN_PATCH.name,

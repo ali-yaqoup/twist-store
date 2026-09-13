@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { syncStorefrontCatalog } from "@/app/admin/actions";
 import AdminProductsList from "@/components/admin/AdminProductsList";
 import { AdminPageHeader } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/server";
@@ -7,6 +8,10 @@ import type { Product } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage() {
+  // Persist storefront catalog overlays (هجرة / WATANAN / بلاتنم / قلنديا) into Supabase
+  // so they show with real names in admin and remain editable/deletable.
+  await syncStorefrontCatalog();
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("products")

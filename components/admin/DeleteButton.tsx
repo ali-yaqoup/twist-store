@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function DeleteButton({ label = "حذف", confirmText, onDelete }: Props) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +18,12 @@ export default function DeleteButton({ label = "حذف", confirmText, onDelete }
     if (!window.confirm(confirmText)) return;
     startTransition(async () => {
       const result = await onDelete();
-      if (!result.ok) setError(result.error ?? "حدث خطأ");
+      if (!result.ok) {
+        setError(result.error ?? "حدث خطأ");
+        return;
+      }
+      setError(null);
+      router.refresh();
     });
   }
 

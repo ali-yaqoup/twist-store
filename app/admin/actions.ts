@@ -13,6 +13,7 @@ import {
   sanitizeText,
 } from "@/lib/security";
 import { createClient } from "@/lib/supabase/server";
+import { STOREFRONT_SYNC_TARGETS } from "@/lib/storefront-photos";
 import { storagePathFromPublicUrl } from "@/lib/upload";
 import type { AboutValue, OrderStatus, ServiceType } from "@/lib/types";
 
@@ -227,11 +228,99 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
   if (blocked) return blocked;
   if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
   const supabase = await createClient();
-  const { error } = await supabase.from("products").delete().eq("id", id);
-  if (error) return { ok: false, error: "تعذر حذف المنتج" };
+
+  // Preferred path: security-definer RPC detaches order_items then deletes.
+  const { error: rpcError } = await supabase.rpc("admin_delete_product", { p_id: id });
+  if (!rpcError) {
+    revalidatePath("/admin/products");
+    revalidateProducts();
+    revalidatePath(`/products/${id}`);
+    return { ok: true };
+  }
+
+  // Fallback when migration 0008 is not applied yet.
+  await supabase.from("order_items").update({ product_id: null }).eq("product_id", id);
+  const { data: deleted, error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", id)
+    .select("id");
+  if (!error && deleted?.length) {
+    revalidatePath("/admin/products");
+    revalidateProducts();
+    revalidatePath(`/products/${id}`);
+    return { ok: true };
+  }
+
+  // Last resort: hide from storefront if hard delete is still blocked by FK/RLS.
+  const { data: softDeleted, error: softError } = await supabase
+    .from("products")
+    .update({ is_active: false, is_featured: false })
+    .eq("id", id)
+    .select("id");
+  if (softError || !softDeleted?.length) {
+    return {
+      ok: false,
+      error:
+        "تعذر حذف المنتج (غالباً مرتبط بطلبات أو صلاحيات). شغّل ملف supabase/migrations/0008_product_delete.sql على Supabase ثم أعد المحاولة.",
+    };
+  }
+
   revalidatePath("/admin/products");
   revalidateProducts();
   revalidatePath(`/products/${id}`);
+  return { ok: true };
+}
+
+/** Write storefront catalog overlays into Supabase so they appear in admin. */
+export async function syncStorefrontCatalog(): Promise<ActionResult> {
+  const blocked = await requireAdmin();
+  if (blocked) return blocked;
+
+  const supabase = await createClient();
+
+  const [{ data: products, error: productsError }, { data: categories, error: categoriesError }] =
+    await Promise.all([
+      supabase.from("products").select("id, name, category_id"),
+      supabase.from("categories").select("id, slug"),
+    ]);
+
+  if (productsError || categoriesError) {
+    return { ok: false, error: "تعذر مزامنة المنتجات مع قاعدة البيانات" };
+  }
+
+  const tshirtsId = categories?.find((c) => c.slug === "tshirts")?.id ?? null;
+  const rows = products ?? [];
+
+  for (const target of STOREFRONT_SYNC_TARGETS) {
+    const existing = rows.find((p) => target.matchNames.includes(p.name));
+    const payload = {
+      name: target.patch.name,
+      description: target.patch.description,
+      price: target.patch.price,
+      images: target.patch.images,
+      sizes: target.patch.sizes,
+      colors: target.patch.colors,
+      embroidery_or_print_type: target.patch.embroidery_or_print_type,
+      is_featured: target.patch.is_featured,
+      is_active: true,
+      category_id: existing?.category_id ?? tshirtsId,
+    };
+
+    if (existing) {
+      // Only push overlay once (legacy seed name → storefront name). Don't clobber later admin edits.
+      if (existing.name === target.patch.name) continue;
+      const { error } = await supabase.from("products").update(payload).eq("id", existing.id);
+      if (error) return { ok: false, error: `تعذر تحديث «${target.patch.name}»` };
+    } else if (target.patch.name === "تيشيرت قلنديا") {
+      if (!tshirtsId) return { ok: false, error: "فئة التيشيرتات غير موجودة" };
+      const { error } = await supabase.from("products").insert(payload);
+      if (error) return { ok: false, error: "تعذر إضافة تيشيرت قلنديا" };
+    }
+  }
+
+  revalidatePath("/admin/products");
+  revalidateProducts();
   return { ok: true };
 }
 
