@@ -452,18 +452,23 @@ export async function updateHeroSlideFocus(
     focus_y: number;
     wide_focus_x: number;
     wide_focus_y: number;
+    zoom: number;
+    wide_zoom: number;
   }
 ): Promise<ActionResult> {
   const blocked = await requireAdmin();
   if (blocked) return blocked;
   if (!isUuid(id)) return { ok: false, error: "معرّف غير صالح" };
 
-  const clamp = (n: number) => Math.min(100, Math.max(0, Number(n)));
+  const clampFocus = (n: number) => Math.min(100, Math.max(0, Number(n)));
+  const clampZoom = (n: number) => Math.min(2.5, Math.max(1.15, Number(n)));
   const payload = {
-    focus_x: clamp(focus.focus_x),
-    focus_y: clamp(focus.focus_y),
-    wide_focus_x: clamp(focus.wide_focus_x),
-    wide_focus_y: clamp(focus.wide_focus_y),
+    focus_x: clampFocus(focus.focus_x),
+    focus_y: clampFocus(focus.focus_y),
+    wide_focus_x: clampFocus(focus.wide_focus_x),
+    wide_focus_y: clampFocus(focus.wide_focus_y),
+    zoom: clampZoom(focus.zoom),
+    wide_zoom: clampZoom(focus.wide_zoom),
   };
 
   const supabase = await createClient();
@@ -477,8 +482,10 @@ export async function updateHeroSlideFocus(
     return {
       ok: false,
       error:
-        error?.message?.includes("focus_x") || error?.code === "PGRST204"
-          ? "تعذر الحفظ — شغّل ملف supabase/migrations/0011_hero_focus.sql على Supabase"
+        error?.message?.includes("zoom") ||
+        error?.message?.includes("focus_x") ||
+        error?.code === "PGRST204"
+          ? "تعذر الحفظ — شغّل ملفي 0011_hero_focus.sql و 0012_hero_zoom.sql على Supabase"
           : "تعذر حفظ قص البانر",
     };
   }

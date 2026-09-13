@@ -52,6 +52,9 @@ export interface HeroSlide {
   /** Focal point for desktop/wide crop (0–100). */
   wide_focus_x?: number | null;
   wide_focus_y?: number | null;
+  /** Zoom for pan room (typically 1.15–2.5). */
+  zoom?: number | null;
+  wide_zoom?: number | null;
 }
 
 export interface SiteSettings {

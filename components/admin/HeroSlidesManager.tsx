@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { addHeroSlide, deleteHeroSlide, moveHeroSlide } from "@/app/admin/actions";
 import DeleteButton from "@/components/admin/DeleteButton";
 import HeroFocusEditor from "@/components/admin/HeroFocusEditor";
-import { heroObjectPosition } from "@/lib/hero-focus";
+import { heroMediaStyle } from "@/lib/hero-focus";
 import { uploadPublicImage } from "@/lib/upload";
 import type { HeroSlide } from "@/lib/types";
 
@@ -51,7 +51,7 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
             src={slides[0].wide_image_url || slides[0].image_url}
             alt={slides[0].alt_text ?? "معاينة البانر"}
             className="h-full w-full object-cover"
-            style={{ objectPosition: heroObjectPosition(slides[0], true) }}
+            style={heroMediaStyle(slides[0], true)}
           />
           <span className="absolute bottom-2 right-2 rounded-full bg-black/70 px-3 py-1 text-[11px] font-bold text-brand">
             المعاينة — الصورة الأولى
@@ -94,7 +94,7 @@ export default function HeroSlidesManager({ slides }: { slides: HeroSlide[] }) {
                 src={slide.wide_image_url || slide.image_url}
                 alt={slide.alt_text ?? ""}
                 className="h-full w-full object-cover"
-                style={{ objectPosition: heroObjectPosition(slide, true) }}
+                style={heroMediaStyle(slide, true)}
               />
               <span className="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[11px] font-bold text-brand">
                 {i + 1}

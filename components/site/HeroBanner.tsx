@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { heroObjectPosition } from "@/lib/hero-focus";
+import { heroMediaStyle } from "@/lib/hero-focus";
 import type { HeroSlide, SiteSettings } from "@/lib/types";
 
 export default function HeroBanner({
@@ -117,7 +117,7 @@ export default function HeroBanner({
         {slides.map((slide, i) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+            className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ease-in-out ${
               i === index ? "opacity-100" : "opacity-0"
             }`}
           >
@@ -129,7 +129,7 @@ export default function HeroBanner({
               sizes="100vw"
               quality={95}
               className="object-cover md:hidden"
-              style={{ objectPosition: heroObjectPosition(slide, false) }}
+              style={heroMediaStyle(slide, false)}
             />
             <Image
               src={slide.wide_image_url || slide.image_url}
@@ -139,7 +139,7 @@ export default function HeroBanner({
               sizes="100vw"
               quality={95}
               className="hidden object-cover md:block"
-              style={{ objectPosition: heroObjectPosition(slide, true) }}
+              style={heroMediaStyle(slide, true)}
             />
           </div>
         ))}
