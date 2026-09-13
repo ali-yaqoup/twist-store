@@ -67,9 +67,9 @@ export const WATANAN_PATCH: ProductPatch = {
 };
 
 export const BLIGHTNM_PATCH: ProductPatch = {
-  name: "تيشيرت براتنهم",
+  name: "تيشيرت بلاتنم",
   description:
-    "تيشيرت أسود بتطريز «براتنهم» وBLTNTM على الصدر. قطعة واضحة الهوية، مناسبة للبس اليومي وللهدايا.",
+    "تيشيرت أسود بتطريز «بلاتنم» وBLTNTM على الصدر. قطعة واضحة الهوية، مناسبة للبس اليومي وللهدايا.",
   price: 89,
   images: [PHOTOS.blightnmCard, PHOTOS.blightnmLook],
   sizes: SIZES,
@@ -97,6 +97,7 @@ const PATCH_BY_NAME: Record<string, ProductPatch> = {
   "تيشيرت WATANAN": WATANAN_PATCH,
   "تيشيرت طباعة فنية": BLIGHTNM_PATCH,
   "تيشيرت براتنهم": BLIGHTNM_PATCH,
+  "تيشيرت بلاتنم": BLIGHTNM_PATCH,
   "تيشيرت قلنديا": QALANDIYA_PATCH,
 };
 
@@ -174,7 +175,7 @@ export const STOREFRONT_GALLERY: GalleryImage[] = [
   {
     id: "gal-blightnm",
     image_url: "/photos/gal-blightnm.jpg",
-    caption: "تطريز براتنهم إلى جانب طباعة ظهر",
+    caption: "تطريز بلاتنم إلى جانب طباعة ظهر",
     created_at: NOW,
   },
   {

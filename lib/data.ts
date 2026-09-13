@@ -155,14 +155,14 @@ const loadProducts = unstable_cache(
     if (options.limit) products = products.slice(0, options.limit);
     return products;
   },
-  ["products-list-v4"],
+  ["products-list-v5"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );
 
 const loadFeaturedProducts = unstable_cache(
   async (limit: number): Promise<Product[]> =>
     loadProducts(productsCacheKey({ featured: true, limit })),
-  ["featured-products-v4"],
+  ["featured-products-v5"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );
 
@@ -193,13 +193,13 @@ const loadProductById = unstable_cache(
     const demo = DEMO_PRODUCTS.find((p) => p.id === id) ?? null;
     return applyStorefrontProduct(demo ? asProduct(demo) : null, id);
   },
-  ["product-by-id-v4"],
+  ["product-by-id-v5"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );
 
 const loadGalleryImages = unstable_cache(
   async (limit: number | null): Promise<GalleryImage[]> => storefrontGallery(limit),
-  ["gallery-v4"],
+  ["gallery-v5"],
   { revalidate: STORE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.gallery] }
 );
 
