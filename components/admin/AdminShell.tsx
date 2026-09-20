@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import AdminNav from "@/components/admin/AdminNav";
 import {
+  AdminAlertsBanner,
   AdminAlertsToggle,
   AdminOrderAlertsProvider,
 } from "@/components/admin/AdminOrderAlerts";
@@ -157,7 +158,10 @@ export default function AdminShell({
       )}
 
       <main className="px-4 pb-28 pt-5 sm:px-6 lg:ms-72 lg:px-8 lg:pb-10 lg:pt-8">
-        <div className="mx-auto max-w-6xl">{children}</div>
+        <div className="mx-auto max-w-6xl">
+          <AdminAlertsBanner />
+          {children}
+        </div>
       </main>
 
       <nav

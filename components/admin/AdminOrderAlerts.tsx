@@ -265,3 +265,28 @@ export function AdminAlertsToggle() {
     </button>
   );
 }
+
+/** Big card at the top of admin pages until alerts are enabled. */
+export function AdminAlertsBanner() {
+  const ctx = useContext(AlertsContext);
+  if (!ctx || ctx.enabled) return null;
+
+  return (
+    <div className="mb-5 rounded-2xl border border-brand/35 bg-brand/10 px-4 py-4 sm:px-5">
+      <p className="font-display text-base font-extrabold text-stone-50">
+        تنبيهات الطلبات الجديدة
+      </p>
+      <p className="mt-1 text-sm leading-7 text-stone-300">
+        فعّل الإشعارات عشان يوصلك صوت وتنبيه أول ما يطلب زبون — وأنت فاتح لوحة
+        الإدارة.
+      </p>
+      <button
+        type="button"
+        onClick={() => void ctx.enableAlerts()}
+        className="btn-gold mt-3 !rounded-xl !px-5 !py-2.5 text-sm"
+      >
+        تفعيل تنبيهات الطلبات الآن
+      </button>
+    </div>
+  );
+}
