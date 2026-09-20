@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { formatPrice } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +25,14 @@ type ToastOrder = {
   customer_phone: string;
   total_price: number;
 };
+
+type AlertsContextValue = {
+  enabled: boolean;
+  enableAlerts: () => Promise<void>;
+  disableAlerts: () => void;
+};
+
+const AlertsContext = createContext<AlertsContextValue | null>(null);
 
 function playOrderChime() {
   try {
@@ -48,7 +65,7 @@ function playOrderChime() {
       void ctx.close();
     }, 600);
   } catch {
-    /* ignore autoplay / unsupported */
+    /* ignore */
   }
 }
 
@@ -71,18 +88,20 @@ function notifyBrowser(order: ToastOrder) {
       n.close();
     };
   } catch {
-    /* Safari / denied */
+    /* ignore */
   }
 }
 
-export default function AdminOrderAlerts({
+export function AdminOrderAlertsProvider({
   onPendingDelta,
+  children,
 }: {
   onPendingDelta: (delta: number) => void;
+  children: ReactNode;
 }) {
   const router = useRouter();
   const [enabled, setEnabled] = useState(false);
-  const [promptOpen, setPromptOpen] = useState(false);
+  const [ready, setReady] = useState(false);
   const [toast, setToast] = useState<ToastOrder | null>(null);
   const toastTimer = useRef<number | null>(null);
   const onPendingDeltaRef = useRef(onPendingDelta);
@@ -90,12 +109,11 @@ export default function AdminOrderAlerts({
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(ALERTS_KEY);
-      if (stored === "1") setEnabled(true);
-      else setPromptOpen(true);
+      setEnabled(localStorage.getItem(ALERTS_KEY) === "1");
     } catch {
-      setPromptOpen(true);
+      /* ignore */
     }
+    setReady(true);
   }, []);
 
   const enableAlerts = useCallback(async () => {
@@ -113,7 +131,6 @@ export default function AdminOrderAlerts({
       /* ignore */
     }
     setEnabled(true);
-    setPromptOpen(false);
   }, []);
 
   const disableAlerts = useCallback(() => {
@@ -123,20 +140,10 @@ export default function AdminOrderAlerts({
       /* ignore */
     }
     setEnabled(false);
-    setPromptOpen(true);
-  }, []);
-
-  const dismissPrompt = useCallback(() => {
-    try {
-      localStorage.setItem(ALERTS_KEY, "0");
-    } catch {
-      /* ignore */
-    }
-    setPromptOpen(false);
   }, []);
 
   useEffect(() => {
-    if (!enabled || !isSupabaseConfigured()) return;
+    if (!ready || !enabled || !isSupabaseConfigured()) return;
 
     const supabase = createClient();
     const channel = supabase
@@ -187,35 +194,16 @@ export default function AdminOrderAlerts({
       if (toastTimer.current) window.clearTimeout(toastTimer.current);
       void supabase.removeChannel(channel);
     };
-  }, [enabled, router]);
+  }, [ready, enabled, router]);
+
+  const value = useMemo(
+    () => ({ enabled, enableAlerts, disableAlerts }),
+    [enabled, enableAlerts, disableAlerts]
+  );
 
   return (
-    <>
-      {promptOpen && !enabled && (
-        <div className="fixed inset-x-0 top-0 z-[60] border-b border-brand/25 bg-night-card/95 px-4 py-3 shadow-lg backdrop-blur-xl lg:ps-80">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-stone-200">
-              فعّل تنبيهات الطلبات عشان يوصلك صوت وإشعار لما يطلب زبون.
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={dismissPrompt}
-                className="rounded-xl px-3 py-2 text-xs font-bold text-stone-400 hover:text-stone-200"
-              >
-                لاحقاً
-              </button>
-              <button
-                type="button"
-                onClick={() => void enableAlerts()}
-                className="btn-gold !rounded-xl !px-4 !py-2 text-xs"
-              >
-                تفعيل التنبيهات
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <AlertsContext.Provider value={value}>
+      {children}
 
       {toast && (
         <div
@@ -249,19 +237,31 @@ export default function AdminOrderAlerts({
           </div>
         </div>
       )}
+    </AlertsContext.Provider>
+  );
+}
 
-      {enabled && (
-        <div className="fixed bottom-[4.75rem] end-3 z-30 lg:bottom-6 lg:end-6">
-          <button
-            type="button"
-            onClick={disableAlerts}
-            className="rounded-full border border-emerald-500/30 bg-night-card/90 px-3 py-1.5 text-[10px] font-bold text-emerald-400 shadow-lg backdrop-blur hover:border-emerald-400/50"
-            title="إيقاف تنبيهات الطلبات"
-          >
-            التنبيهات شغّالة
-          </button>
-        </div>
-      )}
-    </>
+/** Always-visible toggle — place in the admin sidebar / mobile menu. */
+export function AdminAlertsToggle() {
+  const ctx = useContext(AlertsContext);
+  if (!ctx) return null;
+
+  const { enabled, enableAlerts, disableAlerts } = ctx;
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (enabled) disableAlerts();
+        else void enableAlerts();
+      }}
+      className={`flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors ${
+        enabled
+          ? "border border-emerald-500/35 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15"
+          : "border border-brand/40 bg-brand/10 text-brand hover:bg-brand/20"
+      }`}
+    >
+      {enabled ? "التنبيهات شغّالة ✓" : "تفعيل تنبيهات الطلبات"}
+    </button>
   );
 }

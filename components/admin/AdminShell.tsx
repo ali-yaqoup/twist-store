@@ -4,7 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import AdminNav from "@/components/admin/AdminNav";
-import AdminOrderAlerts from "@/components/admin/AdminOrderAlerts";
+import {
+  AdminAlertsToggle,
+  AdminOrderAlertsProvider,
+} from "@/components/admin/AdminOrderAlerts";
 import {
   AdminNavIcon,
   IconClose,
@@ -65,6 +68,7 @@ export default function AdminShell({
   }, [menuOpen]);
 
   return (
+    <AdminOrderAlertsProvider onPendingDelta={onPendingDelta}>
     <div className="min-h-screen bg-night">
       <aside className="fixed inset-y-0 start-0 z-30 hidden w-72 flex-col border-e border-white/8 bg-night-card/95 px-4 py-5 lg:flex">
         <Link href="/admin/dashboard" className="mb-6 px-2">
@@ -75,6 +79,7 @@ export default function AdminShell({
           <AdminNav pendingOrders={orderBadge} unreadMessages={messageBadge} />
         </div>
         <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+          <AdminAlertsToggle />
           {userEmail && (
             <p className="truncate px-2 text-[11px] text-stone-500" dir="ltr" title={userEmail}>
               {userEmail}
@@ -137,6 +142,7 @@ export default function AdminShell({
               />
             </div>
             <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+              <AdminAlertsToggle />
               <Link
                 href="/"
                 className="flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm text-stone-400 hover:text-brand"
@@ -153,8 +159,6 @@ export default function AdminShell({
       <main className="px-4 pb-28 pt-5 sm:px-6 lg:ms-72 lg:px-8 lg:pb-10 lg:pt-8">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
-
-      <AdminOrderAlerts onPendingDelta={onPendingDelta} />
 
       <nav
         aria-label="تنقل سريع"
@@ -188,5 +192,6 @@ export default function AdminShell({
         </div>
       </nav>
     </div>
+    </AdminOrderAlertsProvider>
   );
 }
