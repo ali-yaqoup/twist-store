@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import AdminNav from "@/components/admin/AdminNav";
+import AdminOrderAlerts from "@/components/admin/AdminOrderAlerts";
 import {
   AdminNavIcon,
   IconClose,
@@ -29,7 +30,21 @@ export default function AdminShell({
 }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const counts = { orders: pendingOrders, messages: unreadMessages };
+  const [orderBadge, setOrderBadge] = useState(pendingOrders);
+  const [messageBadge, setMessageBadge] = useState(unreadMessages);
+  const counts = { orders: orderBadge, messages: messageBadge };
+
+  useEffect(() => {
+    setOrderBadge(pendingOrders);
+  }, [pendingOrders]);
+
+  useEffect(() => {
+    setMessageBadge(unreadMessages);
+  }, [unreadMessages]);
+
+  const onPendingDelta = useCallback((delta: number) => {
+    setOrderBadge((n) => Math.max(0, n + delta));
+  }, []);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -57,7 +72,7 @@ export default function AdminShell({
           <span className="mt-1 block text-[10px] tracking-[0.2em] text-stone-500">لوحة الإدارة</span>
         </Link>
         <div className="min-h-0 flex-1 overflow-y-auto pe-1">
-          <AdminNav pendingOrders={pendingOrders} unreadMessages={unreadMessages} />
+          <AdminNav pendingOrders={orderBadge} unreadMessages={messageBadge} />
         </div>
         <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
           {userEmail && (
@@ -116,8 +131,8 @@ export default function AdminShell({
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
               <AdminNav
-                pendingOrders={pendingOrders}
-                unreadMessages={unreadMessages}
+                pendingOrders={orderBadge}
+                unreadMessages={messageBadge}
                 onNavigate={() => setMenuOpen(false)}
               />
             </div>
@@ -138,6 +153,8 @@ export default function AdminShell({
       <main className="px-4 pb-28 pt-5 sm:px-6 lg:ms-72 lg:px-8 lg:pb-10 lg:pt-8">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
+
+      <AdminOrderAlerts onPendingDelta={onPendingDelta} />
 
       <nav
         aria-label="تنقل سريع"
