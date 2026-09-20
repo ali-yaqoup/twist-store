@@ -11,9 +11,19 @@ export async function proxy(request: NextRequest) {
 
   let response = noStore();
 
+  const pathname = request.nextUrl.pathname;
+
+  // PWA install must fetch the admin manifest without auth redirects
+  if (
+    pathname === "/admin/manifest.webmanifest" ||
+    pathname.startsWith("/admin/manifest.webmanifest/")
+  ) {
+    return response;
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const isLoginPage = request.nextUrl.pathname === "/admin/login";
+  const isLoginPage = pathname === "/admin/login";
 
   if (!isSupabaseConfigured() || !supabaseUrl || !supabaseKey) {
     if (!isLoginPage) {

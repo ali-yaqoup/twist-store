@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import path from "path";
+import { withSerwist } from "@serwist/turbopack";
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -16,6 +18,7 @@ const securityHeaders = [
       "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://images.pexels.com http://127.0.0.1:54321 http://localhost:54321",
       "font-src 'self' data:",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://vitals.vercel-insights.com https://va.vercel-scripts.com http://127.0.0.1:54321 http://localhost:54321 ws://127.0.0.1:54321",
+      "worker-src 'self' blob:",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -26,6 +29,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  turbopack: {
+    root: path.join(__dirname),
+  },
   images: {
     qualities: [75, 90, 95],
     contentDispositionType: "attachment",
@@ -85,4 +91,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);

@@ -155,6 +155,12 @@ a svg,
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
   }
 
+  @media (display-mode: standalone) {
+    .pb-safe {
+      padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+    }
+  }
+
   .heading-ar {
     line-height: 1.45;
     text-wrap: balance;

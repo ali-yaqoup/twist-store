@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import TwistLogo from "@/components/site/TwistLogo";
+import { AdminInstallGuide } from "@/components/AdminInstallGuide";
 import { gateAdminLogin } from "./actions";
 
 export default function AdminLoginPage() {
@@ -135,6 +136,10 @@ export default function AdminLoginPage() {
           </a>
         </form>
         )}
+
+        <div className="mt-6">
+          <AdminInstallGuide />
+        </div>
       </div>
     </div>
   );
