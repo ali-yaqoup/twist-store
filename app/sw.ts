@@ -29,10 +29,11 @@ const serwist = new Serwist({
     entries: [
       {
         url: "/~offline",
-        matcher({ request, url }) {
+        matcher({ request }) {
+          const pathname = new URL(request.url).pathname;
           return (
             request.destination === "document" &&
-            !url.pathname.startsWith("/admin")
+            !pathname.startsWith("/admin")
           );
         },
       },
