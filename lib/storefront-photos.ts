@@ -250,7 +250,7 @@ export function applyStorefrontProducts(products: Product[]): Product[] {
     }
     const patch = PATCH_BY_NAME[product.name];
     if (patch) return { ...product, ...patch };
-    return { ...product, is_featured: false };
+    return product;
   });
 
   if (!hasQalandiya) next.push(makeQalandiyaProduct(products));
